@@ -6,12 +6,30 @@ import kotlinx.serialization.encoding.AbstractDecoder
 import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.modules.EmptySerializersModule
 
+/**
+ * Deserialize a [T] object from a function.
+ *
+ * @param mapper A function that contains the logic to retrieve the value.
+ * @return Result<T> for deserialized object or error.
+ */
 inline fun <reified T : Any> fromFunctionResult(noinline mapper: (String) -> String?) =
     runCatching { fromFunction<T>(mapper) }
 
+/**
+ * Deserialize a [T] object from a function.
+ *
+ * @param mapper A function that contains the logic to retrieve the value.
+ * @return A [T] object.
+ */
 inline fun <reified T> fromFunction(noinline mapper: (String) -> String?) =
     serializer<T>().deserialize(SimpleFunctionDecoder(mapper))
 
+/**
+ * A decoder that deserializes data from a function.
+ *
+ * @param mapper A function that contains the logic to retrieve the value.
+ * @param delimiter The delimiter used to separate elements in the path.
+ */
 @OptIn(ExperimentalSerializationApi::class)
 class SimpleFunctionDecoder(
     private val mapper: (String) -> String?,
