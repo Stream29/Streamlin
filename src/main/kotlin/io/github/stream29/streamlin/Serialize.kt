@@ -1,4 +1,4 @@
-package io.stream29.streamlin
+package io.github.stream29.streamlin
 
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.SerialDescriptor

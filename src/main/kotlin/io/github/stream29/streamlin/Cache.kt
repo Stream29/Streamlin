@@ -1,4 +1,4 @@
-package io.stream29.streamlin
+package io.github.stream29.streamlin
 
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty

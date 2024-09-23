@@ -1,4 +1,4 @@
-package io.stream29.streamlin
+package io.github.stream29.streamlin
 
 /**
  * Filters a value based on a predicate.
