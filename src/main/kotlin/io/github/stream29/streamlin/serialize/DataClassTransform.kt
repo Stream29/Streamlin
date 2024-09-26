@@ -132,14 +132,16 @@ inline fun <reified T> T.encodeWith(encoder: Encoder) =
 inline fun <reified T> decodeWith(decoder: Decoder) =
     serializer(typeOf<T>()).deserialize(decoder)
 
+enum class TestEnum {
+    A, B, C
+}
+
 @ExperimentalSerializationApi
 fun main() {
-    val testList = mapOf("test1" to Test("test1"), "test2" to Test("test2"))
+    val testList = TestEnum.A
     val encoder = AnyEncoder()
     testList.encodeWith(encoder)
     println(encoder.record)
     val decoder = AnyDecoder(encoder.record)
-    println(decodeWith<Test2>(decoder))
-    println(decodeWith<Map<String, Test>>(decoder))
-    println(decodeWith<Map<String, Map<String, String>>>(decoder))
+    println(decodeWith<TestEnum>(decoder))
 }

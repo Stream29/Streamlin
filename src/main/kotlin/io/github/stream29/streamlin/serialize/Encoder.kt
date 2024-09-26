@@ -39,7 +39,7 @@ class AnyEncoder(
     }
 
     override fun encodeEnum(enumDescriptor: SerialDescriptor, index: Int) {
-        record.component.add(PrimitiveValue(index))
+        record.component.add(PrimitiveValue(enumDescriptor.getElementName(index)))
     }
 
     override fun encodeFloat(value: Float) {

@@ -41,7 +41,9 @@ class AnyDecoder(
 
     override fun decodeDouble(): Double = decodeValue()
 
-    override fun decodeEnum(enumDescriptor: SerialDescriptor): Int = decodeValue()
+    override fun decodeEnum(enumDescriptor: SerialDescriptor): Int {
+        return enumDescriptor.findIndex(decodeValue<String>())!!
+    }
 
     override fun decodeFloat(): Float = decodeValue()
 
