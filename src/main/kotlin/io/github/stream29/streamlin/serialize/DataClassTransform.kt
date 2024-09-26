@@ -118,7 +118,7 @@ sealed interface Tag
 
 @Serializable
 @SerialName("Test")
-data class Test(val name: String = "Stream", val age: String = "114514") : Tag
+data class Test(val name: String = "Stream", val age: TestEnum = TestEnum.A) : Tag
 
 @Serializable
 data class Test2(
@@ -138,10 +138,10 @@ enum class TestEnum {
 
 @ExperimentalSerializationApi
 fun main() {
-    val testList = TestEnum.A
+    val testList = Test()
     val encoder = AnyEncoder()
     testList.encodeWith(encoder)
     println(encoder.record)
     val decoder = AnyDecoder(encoder.record)
-    println(decodeWith<TestEnum>(decoder))
+    println(decodeWith<Test>(decoder))
 }

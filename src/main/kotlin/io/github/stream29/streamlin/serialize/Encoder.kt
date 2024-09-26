@@ -113,17 +113,16 @@ class StructureEncoder(
     ) {
         val encoder = AnyEncoder()
         serializer.serialize(encoder, value)
-        println(descriptor)
         record.component.add(
-            when {
-                descriptor.isInline -> PrimitiveProperty(
+            when (val content = encoder.record.component[0]) {
+                is PrimitiveValue -> PrimitiveProperty(
                     descriptor.getElementName(index),
-                    encoder.record.component[0]
+                    content.value
                 )
 
-                else -> StructureProperty(
+                is StructureValue -> StructureProperty(
                     descriptor.getElementName(index),
-                    encoder.record.component[0] as StructureValue
+                    content
                 )
             }
         )
@@ -227,7 +226,7 @@ class MapEncoder(
             serializer.serialize(encoder, value)
             val value = encoder.record.component[0]
             record.component.add(
-                when(value) {
+                when (value) {
                     is PrimitiveValue -> PrimitiveProperty(
                         current!!,
                         value.value
