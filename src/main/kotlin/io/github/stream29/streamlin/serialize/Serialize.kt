@@ -1,10 +1,11 @@
-package io.github.stream29.streamlin
+package io.github.stream29.streamlin.serialize
 
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.AbstractDecoder
 import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.modules.EmptySerializersModule
+import kotlin.Any
 
 /**
  * Deserialize a [T] object from a function.
@@ -96,7 +97,6 @@ class SimpleFunctionDecoder(
 
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
         while(true) {
-            println(currentElementCount)
             if (currentElementCount >= descriptor.elementsCount)
                 return CompositeDecoder.DECODE_DONE
             if(!currentDescriptor.isElementOptional(currentElementCount) || decodeNotNullMark())
