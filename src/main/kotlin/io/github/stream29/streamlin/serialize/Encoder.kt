@@ -3,6 +3,7 @@ package io.github.stream29.streamlin.serialize
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.SerializationStrategy
+import kotlinx.serialization.descriptors.PolymorphicKind
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.StructureKind
 import kotlinx.serialization.encoding.CompositeEncoder
@@ -19,6 +20,7 @@ class AnyEncoder(
         when (descriptor.kind) {
             StructureKind.CLASS -> StructureEncoder().also { record.component.add(it.record) }
             StructureKind.MAP -> MapEncoder().also { record.component.add(it.record) }
+            PolymorphicKind.SEALED -> StructureEncoder().also { record.component.add(it.record) }
             else -> throw NotImplementedError("Unsupported descriptor kind: ${descriptor.kind}")
         }
 

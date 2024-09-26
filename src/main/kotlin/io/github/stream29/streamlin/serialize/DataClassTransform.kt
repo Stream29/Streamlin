@@ -118,13 +118,12 @@ sealed interface Tag
 
 @Serializable
 @SerialName("Test")
-data class Test(val name: String = "Stream", val age: TestEnum = TestEnum.A) : Tag
+data class Test(
+    val name: String = "Stream",
+    val age: TestEnum = TestEnum.A
+) : Tag
 
-@Serializable
-data class Test2(
-    val test1: Test,
-    val test2: Test,
-)
+
 
 inline fun <reified T> T.encodeWith(encoder: Encoder) =
     serializer(typeOf<T>()).serialize(encoder, this)
@@ -140,8 +139,8 @@ enum class TestEnum {
 fun main() {
     val testList = Test()
     val encoder = AnyEncoder()
-    testList.encodeWith(encoder)
+    testList.encodeWith<Tag>(encoder)
     println(encoder.record)
     val decoder = AnyDecoder(encoder.record)
-    println(decodeWith<Test>(decoder))
+    println(decodeWith<Tag>(decoder))
 }
