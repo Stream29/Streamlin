@@ -6,6 +6,7 @@ import io.github.stream29.streamlin.serialize.template.findByName
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.MissingFieldException
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.StructureKind
 import kotlinx.serialization.encoding.CompositeDecoder
@@ -19,15 +20,16 @@ class AnyDecoder(
     override val serializersModule: SerializersModule = EmptySerializersModule()
 ) : DecoderTemplate() {
     override fun decodeNotNullMark(): Boolean =
-        record.component.isNotEmpty()
+        record.component.isNotEmpty() && record.component[0] !is NullValue
 
     override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder {
         val structureValue = record.component[0] as StructureValue
         return when (descriptor.kind) {
-            is StructureKind.CLASS -> StructureDecoder(structureValue)
-            is StructureKind.MAP -> MapDecoder(structureValue)
+            is StructureKind.CLASS, StructureKind.OBJECT -> ::StructureDecoder
+            is StructureKind.MAP -> ::MapDecoder
+            is StructureKind.LIST -> ::ListDecoder
             else -> throw NotImplementedError("Unsupported descriptor kind: ${descriptor.kind}")
-        }
+        }(structureValue, serializersModule)
     }
 
     override fun decodePrimitive(): Any =
@@ -42,14 +44,14 @@ class AnyDecoder(
 
 
 @ExperimentalSerializationApi
-class StructureDecoder(
-    val record: StructureValue,
+open class StructureDecoder(
+    record: StructureValue,
     override val serializersModule: SerializersModule = EmptySerializersModule()
 ) : CompositeDecoderTemplate() {
 
-    private var iterator = record.component.iterator()
+    protected var iterator = record.component.iterator()
 
-    private lateinit var currentProperty: Property
+    protected lateinit var currentProperty: Property
 
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
         if (iterator.hasNext()) {
@@ -71,12 +73,9 @@ class StructureDecoder(
         index: Int,
         deserializer: DeserializationStrategy<T?>,
         previousValue: T?
-    ): T? {
-        val found = currentProperty as? StructureProperty
-        return found?.let {
-            deserializer.deserialize(AnyDecoder(Record(mutableListOf(found.value))))
-        }
-    }
+    ): T? =
+        if(currentProperty is NullProperty) null
+        else decodeSerializableElement(descriptor, index, deserializer, previousValue)
 
     override fun <T> decodeSerializableElement(
         descriptor: SerialDescriptor,
@@ -84,33 +83,21 @@ class StructureDecoder(
         deserializer: DeserializationStrategy<T>,
         previousValue: T?
     ): T {
-        return when (val currentProperty = this.currentProperty) {
-            is PrimitiveProperty -> {
-                deserializer.deserialize(
-                    AnyDecoder(
-                        Record(
-                            mutableListOf(
-                                PrimitiveValue(
-                                    currentProperty.value
-                                )
-                            )
-                        )
-                    )
-                )
-            }
+        return deserializer.deserialize(
+            AnyDecoder(
+                Record(
+                    mutableListOf(
+                        when (val currentProperty = this.currentProperty) {
+                            is PrimitiveProperty -> PrimitiveValue(currentProperty.value)
 
-            is StructureProperty -> {
-                deserializer.deserialize(
-                    AnyDecoder(
-                        Record(
-                            mutableListOf(
-                                currentProperty.value
-                            )
-                        )
+                            is StructureProperty -> currentProperty.value
+
+                            is NullProperty -> NullValue
+                        }
                     )
                 )
-            }
-        }
+            )
+        )
     }
 
     override fun decodeInlineElement(descriptor: SerialDescriptor, index: Int): Decoder {
@@ -155,6 +142,7 @@ class MapDecoder(
         }
     }
 
+    @Suppress("unchecked_cast")
     override fun <T> decodeSerializableElement(
         descriptor: SerialDescriptor,
         index: Int,
@@ -196,6 +184,8 @@ class MapDecoder(
                         )
                     )
                 }
+
+                is NullProperty -> throw SerializationException("Null value found in non-nullable field ${currentProperty.key}")
             }
         }
     }
@@ -205,4 +195,19 @@ class MapDecoder(
     }
 
     override fun decodeSequentially(): Boolean = false
+}
+
+@ExperimentalSerializationApi
+class ListDecoder(
+    record: StructureValue,
+    serializersModule: SerializersModule = EmptySerializersModule()
+) : StructureDecoder(record, serializersModule) {
+    override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
+        if (iterator.hasNext()) {
+            currentProperty = iterator.next()
+            return currentProperty.key.toInt()
+        } else {
+            return CompositeDecoder.DECODE_DONE
+        }
+    }
 }

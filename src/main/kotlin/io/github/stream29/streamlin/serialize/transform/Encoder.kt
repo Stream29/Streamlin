@@ -5,42 +5,63 @@ import io.github.stream29.streamlin.serialize.template.EncoderTemplate
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.SerializationStrategy
-import kotlinx.serialization.descriptors.PolymorphicKind
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.StructureKind
+import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
 
 @ExperimentalSerializationApi
+sealed interface ValueContainer {
+    val value: Value
+}
+
+@ExperimentalSerializationApi
 class AnyEncoder(
-    override val serializersModule: SerializersModule = EmptySerializersModule()
+    override val serializersModule: SerializersModule = EmptySerializersModule(),
+    val config: TransformEncodeConfig = TransformEncodeConfig()
 ) : EncoderTemplate() {
     val record = Record()
-    override fun beginStructure(descriptor: SerialDescriptor) =
-        when (descriptor.kind) {
-            StructureKind.CLASS -> StructureEncoder().also { record.component.add(it.record) }
-            StructureKind.MAP -> MapEncoder().also { record.component.add(it.record) }
-            PolymorphicKind.SEALED -> StructureEncoder().also { record.component.add(it.record) }
-            else -> throw NotImplementedError("Unsupported descriptor kind: ${descriptor.kind}")
-        }
+    override fun beginStructure(descriptor: SerialDescriptor): CompositeEncoderTemplate {
+        val compositeEncoder = when (descriptor.kind) {
+            StructureKind.CLASS -> ::StructureEncoder
+            StructureKind.MAP -> ::MapEncoder
+            PolymorphicKind.SEALED -> ::StructureEncoder
+            StructureKind.LIST -> ::StructureEncoder
+            StructureKind.OBJECT -> ::StructureEncoder
+            PolymorphicKind.OPEN -> TODO()
+            SerialKind.ENUM -> TODO()
+            is PrimitiveKind -> throw SerializationException("PrimitiveKind is not structure")
+            SerialKind.CONTEXTUAL -> TODO()
+        }(serializersModule, config)
+        record.component.add(compositeEncoder.value)
+        return compositeEncoder
+    }
 
     override fun encodePrimitive(value: Any) {
         record.component.add(PrimitiveValue(value))
+    }
+
+    override fun encodeNull() {
+        if (config.encodeNull)
+            record.component.add(NullValue)
     }
 }
 
 @ExperimentalSerializationApi
 class StructureEncoder(
-    override val serializersModule: SerializersModule = EmptySerializersModule()
-) : CompositeEncoderTemplate() {
-    val record = StructureValue()
+    override val serializersModule: SerializersModule = EmptySerializersModule(),
+    val config: TransformEncodeConfig = TransformEncodeConfig()
+) : CompositeEncoderTemplate(), ValueContainer {
+    override val value = StructureValue()
+
+    override fun shouldEncodeElementDefault(descriptor: SerialDescriptor, index: Int): Boolean =
+        config.encodeDefault
 
     override fun encodePrimitiveElement(
         descriptor: SerialDescriptor,
         index: Int,
         value: Any
     ) {
-        record.component.add(
+        this.value.component.add(
             PrimitiveProperty(
                 descriptor.getElementName(index),
                 value
@@ -54,8 +75,9 @@ class StructureEncoder(
         serializer: SerializationStrategy<T>,
         value: T
     ) {
-        val encodedValue = AnyEncoder().also { serializer.serialize(it, value) }.record.component[0]
-        record.component.add(
+        val encodedValue =
+            AnyEncoder(serializersModule, config).also { serializer.serialize(it, value) }.record.component[0]
+        this.value.component.add(
             when (encodedValue) {
                 is PrimitiveValue -> PrimitiveProperty(
                     descriptor.getElementName(index),
@@ -66,16 +88,26 @@ class StructureEncoder(
                     descriptor.getElementName(index),
                     encodedValue
                 )
+
+                is NullValue -> NullProperty(
+                    descriptor.getElementName(index)
+                )
             }
         )
+    }
+
+    override fun encodeNull(descriptor: SerialDescriptor, index: Int) {
+        if (config.encodeNull)
+            value.component.add(NullProperty(descriptor.getElementName(index)))
     }
 }
 
 @ExperimentalSerializationApi
 class MapEncoder(
-    override val serializersModule: SerializersModule = EmptySerializersModule()
-) : CompositeEncoderTemplate() {
-    val record = StructureValue()
+    override val serializersModule: SerializersModule = EmptySerializersModule(),
+    val config: TransformEncodeConfig = TransformEncodeConfig()
+) : CompositeEncoderTemplate(), ValueContainer {
+    override val value = StructureValue()
     private var current: String? = null
 
     override fun encodePrimitiveElement(
@@ -89,7 +121,7 @@ class MapEncoder(
             else
                 current = value
         } else {
-            record.component.add(
+            this.value.component.add(
                 PrimitiveProperty(
                     current as String,
                     value
@@ -112,8 +144,9 @@ class MapEncoder(
                 throw SerializationException("Only map with string keys are supported")
             }
         }
-        val encodedValue = AnyEncoder().also { serializer.serialize(it, value) }.record.component[0]
-        record.component.add(
+        val encodedValue =
+            AnyEncoder(serializersModule, config).also { serializer.serialize(it, value) }.record.component[0]
+        this.value.component.add(
             when (encodedValue) {
                 is PrimitiveValue -> PrimitiveProperty(
                     current!!,
@@ -123,6 +156,10 @@ class MapEncoder(
                 is StructureValue -> StructureProperty(
                     current!!,
                     encodedValue
+                )
+
+                is NullValue -> NullProperty(
+                    current!!
                 )
             }
         )
@@ -137,5 +174,10 @@ class MapEncoder(
         value: T?
     ) {
         throw SerializationException("There shouldn't be nullable key or value in map")
+    }
+
+    override fun encodeNull(descriptor: SerialDescriptor, index: Int) {
+        if (config.encodeNull)
+            value.component.add(NullProperty(descriptor.getElementName(index)))
     }
 }

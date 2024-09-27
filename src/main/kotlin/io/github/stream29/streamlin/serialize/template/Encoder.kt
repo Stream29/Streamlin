@@ -1,5 +1,6 @@
 package io.github.stream29.streamlin.serialize.template
 
+import io.github.stream29.streamlin.serialize.transform.TransformEncodeConfig
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.SerializationStrategy

@@ -13,7 +13,16 @@ class PrimitiveProperty(
     val value: Any
 ) : Property {
     override fun toString(): String {
-        return "Property($key=$value)"
+        return "Property(${key.toClarifyString()}=${value.toClarifyString()})"
+    }
+}
+
+@ExperimentalSerializationApi
+class NullProperty(
+    override val key: String
+) : Property {
+    override fun toString(): String {
+        return "Property(${key.toClarifyString()}=null)"
     }
 }
 
@@ -23,7 +32,7 @@ class StructureProperty(
     val value: StructureValue
 ) : Property {
     override fun toString(): String {
-        return "Property(key=$key, value=$value)"
+        return "Property(key=${key.toClarifyString()}, value=$value)"
     }
 }
 
@@ -36,14 +45,18 @@ class StructureValue(
     }
 }
 
+object NullValue : Value {
+    override fun toString(): String {
+        return "NullValue()"
+    }
+}
+
 @ExperimentalSerializationApi
-@JvmInline
-value class PrimitiveValue(
+class PrimitiveValue(
     val value: Any
 ) : Value {
-    override fun toString(): String {
-        return "Value($value)"
-    }
+    override fun toString(): String =
+        "Value(${value.toClarifyString()})"
 }
 
 @ExperimentalSerializationApi
@@ -56,3 +69,11 @@ class Record(
 }
 
 sealed interface Value
+
+private fun Any?.toClarifyString() =
+    when (this) {
+        null -> "null"
+        is String -> "\"$this\""
+        is Char -> "'$this'"
+        else -> this.toString()
+    }
