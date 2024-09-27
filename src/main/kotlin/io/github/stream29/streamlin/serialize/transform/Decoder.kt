@@ -1,5 +1,8 @@
 package io.github.stream29.streamlin.serialize.transform
 
+import io.github.stream29.streamlin.serialize.template.CompositeDecoderTemplate
+import io.github.stream29.streamlin.serialize.template.DecoderTemplate
+import io.github.stream29.streamlin.serialize.template.findByName
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.MissingFieldException
@@ -14,7 +17,7 @@ import kotlinx.serialization.modules.SerializersModule
 class AnyDecoder(
     val record: Record,
     override val serializersModule: SerializersModule = EmptySerializersModule()
-) : Decoder {
+) : DecoderTemplate() {
     override fun decodeNotNullMark(): Boolean =
         record.component.isNotEmpty()
 
@@ -23,41 +26,18 @@ class AnyDecoder(
         return when (descriptor.kind) {
             is StructureKind.CLASS -> StructureDecoder(structureValue)
             is StructureKind.MAP -> MapDecoder(structureValue)
-            else -> throw NotImplementedError("Unsupported descriptor kind: $descriptor")
+            else -> throw NotImplementedError("Unsupported descriptor kind: ${descriptor.kind}")
         }
     }
 
-    private inline fun <reified T : Any> decodeValue(): T {
-        val found = record.component.firstOrNull { it is PrimitiveValue && it.value is T } as PrimitiveValue?
-        found?.let { return found.value as T }
-            ?: throw MissingFieldException(T::class.simpleName!!, T::class.simpleName!!)
-    }
+    override fun decodePrimitive(): Any =
+        record.component
+            .firstOrNull { it is PrimitiveValue }
+            .let { it as PrimitiveValue? }
+            ?.value
+            ?.let { return it }
+            ?: Unit
 
-    override fun decodeBoolean(): Boolean = decodeValue()
-
-    override fun decodeByte(): Byte = decodeValue()
-
-    override fun decodeChar(): Char = decodeValue()
-
-    override fun decodeDouble(): Double = decodeValue()
-
-    override fun decodeEnum(enumDescriptor: SerialDescriptor): Int {
-        return enumDescriptor.findIndex(decodeValue<String>())!!
-    }
-
-    override fun decodeFloat(): Float = decodeValue()
-
-    override fun decodeInline(descriptor: SerialDescriptor): Decoder = this
-
-    override fun decodeInt(): Int = decodeValue()
-
-    override fun decodeLong(): Long = decodeValue()
-
-    override fun decodeNull(): Nothing? = null
-
-    override fun decodeShort(): Short = decodeValue()
-
-    override fun decodeString(): String = decodeValue()
 }
 
 
@@ -65,7 +45,7 @@ class AnyDecoder(
 class StructureDecoder(
     val record: StructureValue,
     override val serializersModule: SerializersModule = EmptySerializersModule()
-) : CompositeDecoder {
+) : CompositeDecoderTemplate() {
 
     private var iterator = record.component.iterator()
 
@@ -74,16 +54,16 @@ class StructureDecoder(
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
         if (iterator.hasNext()) {
             currentProperty = iterator.next()
-            return descriptor.findIndex(currentProperty.key) ?: decodeElementIndex(descriptor)
+            return descriptor.findByName(currentProperty.key) ?: decodeElementIndex(descriptor)
         } else {
             return CompositeDecoder.DECODE_DONE
         }
     }
 
-    private inline fun <reified T : Any> decodeElement(descriptor: SerialDescriptor, index: Int): T {
+    override fun decodePrimitiveElement(descriptor: SerialDescriptor, index: Int): Any {
         val found = currentProperty as? PrimitiveProperty
             ?: throw MissingFieldException(currentProperty.key, descriptor.serialName)
-        return found.value as T
+        return found.value
     }
 
     override fun <T : Any> decodeNullableSerializableElement(
@@ -136,46 +116,13 @@ class StructureDecoder(
     override fun decodeInlineElement(descriptor: SerialDescriptor, index: Int): Decoder {
         TODO()
     }
-
-    override fun endStructure(descriptor: SerialDescriptor) {
-        // Do nothing
-    }
-
-    override fun decodeBooleanElement(descriptor: SerialDescriptor, index: Int): Boolean =
-        decodeElement(descriptor, index)
-
-    override fun decodeByteElement(descriptor: SerialDescriptor, index: Int): Byte =
-        decodeElement(descriptor, index)
-
-    override fun decodeCharElement(descriptor: SerialDescriptor, index: Int): Char =
-        decodeElement(descriptor, index)
-
-    override fun decodeDoubleElement(descriptor: SerialDescriptor, index: Int): Double =
-        decodeElement(descriptor, index)
-
-    override fun decodeSequentially(): Boolean = false
-
-    override fun decodeFloatElement(descriptor: SerialDescriptor, index: Int): Float =
-        decodeElement(descriptor, index)
-
-    override fun decodeIntElement(descriptor: SerialDescriptor, index: Int): Int =
-        decodeElement(descriptor, index)
-
-    override fun decodeLongElement(descriptor: SerialDescriptor, index: Int): Long =
-        decodeElement(descriptor, index)
-
-    override fun decodeShortElement(descriptor: SerialDescriptor, index: Int): Short =
-        decodeElement(descriptor, index)
-
-    override fun decodeStringElement(descriptor: SerialDescriptor, index: Int): String =
-        decodeElement(descriptor, index)
 }
 
 @ExperimentalSerializationApi
 class MapDecoder(
     val record: StructureValue,
     override val serializersModule: SerializersModule = EmptySerializersModule()
-) : CompositeDecoder {
+) : CompositeDecoderTemplate() {
     private var iterator = record.component.iterator()
 
     private lateinit var currentProperty: Property
@@ -190,10 +137,10 @@ class MapDecoder(
 
     }
 
-    private inline fun <reified T : Any> decodeElement(descriptor: SerialDescriptor, index: Int): T {
+    override fun decodePrimitiveElement(descriptor: SerialDescriptor, index: Int): Any {
         val found = currentProperty as? PrimitiveProperty
             ?: throw MissingFieldException(currentProperty.key, descriptor.serialName)
-        return found.value as T
+        return found.value
     }
 
     override fun <T : Any> decodeNullableSerializableElement(
@@ -257,46 +204,5 @@ class MapDecoder(
         TODO()
     }
 
-    override fun endStructure(descriptor: SerialDescriptor) {
-        // Do nothing
-    }
-
-    override fun decodeBooleanElement(descriptor: SerialDescriptor, index: Int): Boolean =
-        decodeElement(descriptor, index)
-
-    override fun decodeByteElement(descriptor: SerialDescriptor, index: Int): Byte =
-        decodeElement(descriptor, index)
-
-    override fun decodeCharElement(descriptor: SerialDescriptor, index: Int): Char =
-        decodeElement(descriptor, index)
-
-    override fun decodeDoubleElement(descriptor: SerialDescriptor, index: Int): Double =
-        decodeElement(descriptor, index)
-
     override fun decodeSequentially(): Boolean = false
-
-    override fun decodeFloatElement(descriptor: SerialDescriptor, index: Int): Float =
-        decodeElement(descriptor, index)
-
-    override fun decodeIntElement(descriptor: SerialDescriptor, index: Int): Int =
-        decodeElement(descriptor, index)
-
-    override fun decodeLongElement(descriptor: SerialDescriptor, index: Int): Long =
-        decodeElement(descriptor, index)
-
-    override fun decodeShortElement(descriptor: SerialDescriptor, index: Int): Short =
-        decodeElement(descriptor, index)
-
-    override fun decodeStringElement(descriptor: SerialDescriptor, index: Int): String =
-        decodeElement(descriptor, index)
-}
-
-@ExperimentalSerializationApi
-private fun SerialDescriptor.findIndex(serialName: String): Int? {
-    for (i in 0..<this.elementsCount) {
-        if (getElementName(i) == serialName) {
-            return i
-        }
-    }
-    return null
 }
