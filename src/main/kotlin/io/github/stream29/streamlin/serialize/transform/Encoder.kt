@@ -21,17 +21,7 @@ class AnyEncoder(
 ) : EncoderTemplate() {
     val record = Record()
     override fun beginStructure(descriptor: SerialDescriptor): CompositeEncoderTemplate {
-        val compositeEncoder = when (descriptor.kind) {
-            StructureKind.CLASS -> ::StructureEncoder
-            StructureKind.MAP -> ::MapEncoder
-            PolymorphicKind.SEALED -> ::StructureEncoder
-            StructureKind.LIST -> ::StructureEncoder
-            StructureKind.OBJECT -> ::StructureEncoder
-            PolymorphicKind.OPEN -> TODO()
-            SerialKind.ENUM -> TODO()
-            is PrimitiveKind -> throw SerializationException("PrimitiveKind is not structure")
-            SerialKind.CONTEXTUAL -> TODO()
-        }(serializersModule, config)
+        val compositeEncoder = StructureEncoder(serializersModule, config)
         record.component.add(compositeEncoder.value)
         return compositeEncoder
     }
@@ -49,7 +39,7 @@ class AnyEncoder(
 @ExperimentalSerializationApi
 class StructureEncoder(
     override val serializersModule: SerializersModule = EmptySerializersModule(),
-    val config: TransformEncodeConfig = TransformEncodeConfig()
+    private val config: TransformEncodeConfig = TransformEncodeConfig()
 ) : CompositeEncoderTemplate(), ValueContainer {
     override val value = StructureValue()
 
@@ -94,86 +84,6 @@ class StructureEncoder(
                 )
             }
         )
-    }
-
-    override fun encodeNull(descriptor: SerialDescriptor, index: Int) {
-        if (config.encodeNull)
-            value.component.add(NullProperty(descriptor.getElementName(index)))
-    }
-}
-
-@ExperimentalSerializationApi
-class MapEncoder(
-    override val serializersModule: SerializersModule = EmptySerializersModule(),
-    val config: TransformEncodeConfig = TransformEncodeConfig()
-) : CompositeEncoderTemplate(), ValueContainer {
-    override val value = StructureValue()
-    private var current: String? = null
-
-    override fun encodePrimitiveElement(
-        descriptor: SerialDescriptor,
-        index: Int,
-        value: Any
-    ) {
-        if (current == null) {
-            if (value !is String)
-                throw SerializationException("Only map with string keys are supported")
-            else
-                current = value
-        } else {
-            this.value.component.add(
-                PrimitiveProperty(
-                    current as String,
-                    value
-                )
-            )
-        }
-    }
-
-    override fun <T> encodeSerializableElement(
-        descriptor: SerialDescriptor,
-        index: Int,
-        serializer: SerializationStrategy<T>,
-        value: T
-    ) {
-        if (current == null) {
-            if (value is String) {
-                current = value
-                return
-            } else {
-                throw SerializationException("Only map with string keys are supported")
-            }
-        }
-        val encodedValue =
-            AnyEncoder(serializersModule, config).also { serializer.serialize(it, value) }.record.component[0]
-        this.value.component.add(
-            when (encodedValue) {
-                is PrimitiveValue -> PrimitiveProperty(
-                    current!!,
-                    encodedValue.value
-                )
-
-                is StructureValue -> StructureProperty(
-                    current!!,
-                    encodedValue
-                )
-
-                is NullValue -> NullProperty(
-                    current!!
-                )
-            }
-        )
-        current = null
-
-    }
-
-    override fun <T : Any> encodeNullableSerializableElement(
-        descriptor: SerialDescriptor,
-        index: Int,
-        serializer: SerializationStrategy<T>,
-        value: T?
-    ) {
-        throw SerializationException("There shouldn't be nullable key or value in map")
     }
 
     override fun encodeNull(descriptor: SerialDescriptor, index: Int) {
