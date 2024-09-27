@@ -14,9 +14,7 @@ class PrimitiveProperty(
     value: Any
 ) : Property {
     override val value = PrimitiveValue(value)
-    override fun toString(): String {
-        return "Property(${key.toClarifyString()}=${value.value.toClarifyString()})"
-    }
+    override fun toString() = "Property(${key.toClarifyString()}=${value.value.toClarifyString()})"
 }
 
 @ExperimentalSerializationApi
@@ -24,9 +22,7 @@ class NullProperty(
     override val key: String
 ) : Property {
     override val value = NullValue
-    override fun toString(): String {
-        return "Property(${key.toClarifyString()}=null)"
-    }
+    override fun toString() = "Property(${key.toClarifyString()}=null)"
 }
 
 @ExperimentalSerializationApi
@@ -34,9 +30,7 @@ class StructureProperty(
     override val key: String,
     override val value: StructureValue
 ) : Property {
-    override fun toString(): String {
-        return "Property(key=${key.toClarifyString()}, value=$value)"
-    }
+    override fun toString() = "Property(key=${key.toClarifyString()}, value=$value)"
 }
 
 @ExperimentalSerializationApi
@@ -44,26 +38,32 @@ class StructureProperty(
 class StructureValue(
     val component: MutableList<Property> = mutableListOf()
 ) : Value, MutableList<Property> by component {
-    override fun toString(): String {
-        return "Structure(component=$component)"
-    }
+    override fun toString() = "Structure(component=$component)"
+    override fun named(name: String) = StructureProperty(name, this)
 }
 
+@ExperimentalSerializationApi
 object NullValue : Value {
-    override fun toString(): String {
-        return "NullValue()"
-    }
+    override fun toString() = "NullValue()"
+    override fun named(name: String) = NullProperty(name)
 }
 
 @ExperimentalSerializationApi
 class PrimitiveValue(
     val value: Any
 ) : Value {
-    override fun toString(): String =
-        "Value(${value.toClarifyString()})"
+    override fun toString(): String = "Value(${value.toClarifyString()})"
+    override fun named(name: String) = PrimitiveProperty(name, value)
 }
 
-sealed interface Value
+sealed interface Value {
+    fun named(name: String): Property
+}
+
+@ExperimentalSerializationApi
+sealed interface ValueContainer {
+    val record: Value
+}
 
 private fun Any?.toClarifyString() =
     when (this) {
@@ -72,8 +72,3 @@ private fun Any?.toClarifyString() =
         is Char -> "'$this'"
         else -> this.toString()
     }
-
-@ExperimentalSerializationApi
-sealed interface ValueContainer {
-    val record: Value
-}

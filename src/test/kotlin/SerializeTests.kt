@@ -1,28 +1,40 @@
-import io.github.stream29.streamlin.serialize.transform.*
+import io.github.stream29.streamlin.serialize.function.fromFunction
+import io.github.stream29.streamlin.serialize.transform.AnyDecoder
+import io.github.stream29.streamlin.serialize.transform.AnyEncoder
+import io.github.stream29.streamlin.serialize.transform.TransformConfiguration
+import io.github.stream29.streamlin.serialize.transform.Transformer
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.serializer
-import kotlin.reflect.typeOf
+import kotlinx.serialization.modules.EmptySerializersModule
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 @ExperimentalSerializationApi
-fun main() {
-    val testList = TestGeneric(12)
-    val encoder = AnyEncoder(
-        config = TransformEncodeConfig(
-            encodeNull = true,
-            encodeDefault = true
+class SerializeTests {
+    @Test
+    fun fromFunctionTest() {
+        val map = mapOf(
+            "name" to "Stream",
+            "age.property" to "12"
         )
-    )
-    testList.encodeWith<TestGeneric<Int>>(encoder)
-    prettyPrintln(encoder.record)
-    val decoder = AnyDecoder(record = encoder.record)
-    prettyPrintln(decodeWith<TestGeneric<Int>>(decoder))
+        val testData = fromFunction<TestData> { map[it] }
+        assertEquals(TestData("Stream", TestInline(12)), testData)
+        prettyPrintln(testData)
+    }
+
+    @Test
+    fun polymorphicTest() {
+        val value = Transformer.encodeToValue<Tag>(TestData())
+        prettyPrintln(value)
+        val testData = Transformer.decodeFromValue<Tag>(value)
+        assertEquals(TestData("Stream", TestInline(12)), testData)
+        prettyPrintln(testData)
+    }
+
 }
 
 @Serializable
-open class Tag
+sealed interface Tag
 
 @Serializable
 @JvmInline
@@ -31,9 +43,8 @@ value class TestInline(val value: Int = 5)
 @Serializable
 data class TestData(
     val name: String? = "Stream",
-//    @Contextual
-    val age: TestGeneric<Int> = TestGeneric<Int>(12)
-) : Tag()
+    val age: TestInline = TestInline(12)
+) : Tag
 
 @Serializable
 data class TestGeneric<T>(
@@ -67,9 +78,3 @@ fun prettyPrintln(text: String) {
     }
     println()
 }
-
-inline fun <reified T> T.encodeWith(encoder: Encoder) =
-    serializer(typeOf<T>()).serialize(encoder, this)
-
-inline fun <reified T> decodeWith(decoder: Decoder) =
-    serializer(typeOf<T>()).deserialize(decoder)

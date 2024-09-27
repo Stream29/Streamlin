@@ -9,7 +9,6 @@ import kotlinx.serialization.MissingFieldException
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.CompositeDecoder
-import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
 
@@ -25,6 +24,7 @@ class AnyDecoder(
         val structureValue = record as StructureValue
         return when (descriptor.kind) {
             StructureKind.MAP, StructureKind.LIST -> ::ListDecoder
+            is PolymorphicKind -> ::TypeTaggedDecoder
             else -> ::StructureDecoder
         }(serializersModule, structureValue)
     }
@@ -44,7 +44,7 @@ open class StructureDecoder(
     final override val record: StructureValue
 ) : CompositeDecoderTemplate(), ValueContainer {
 
-    protected var iterator = record.iterator()
+    protected var iterator: Iterator<Property> = record.iterator()
 
     protected lateinit var currentProperty: Property
 
@@ -77,17 +77,35 @@ open class StructureDecoder(
         index: Int,
         deserializer: DeserializationStrategy<T>,
         previousValue: T?
-    ): T {
-        return deserializer.deserialize(
-            decodeInlineElement(descriptor, index)
-        )
-    }
+    ) = deserializer.deserialize(decodeInlineElement(descriptor, index))
 
-    override fun decodeInlineElement(descriptor: SerialDescriptor, index: Int): Decoder {
-        return AnyDecoder(
+    override fun decodeInlineElement(descriptor: SerialDescriptor, index: Int) =
+        AnyDecoder(
             serializersModule = serializersModule,
             record = currentProperty.value
         )
+}
+
+@ExperimentalSerializationApi
+class TypeTaggedDecoder(
+    serializersModule: SerializersModule = EmptySerializersModule(),
+    record: StructureValue
+) : StructureDecoder(serializersModule, record) {
+    private var count = 0
+    override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
+        when (count) {
+            0 -> {
+                currentProperty = iterator.next()
+                return count++
+            }
+
+            1 -> return count++
+            else -> return CompositeDecoder.DECODE_DONE
+        }
+    }
+
+    override fun decodeInlineElement(descriptor: SerialDescriptor, index: Int): AnyDecoder {
+        return AnyDecoder(serializersModule, StructureValue(iterator.asSequence().toMutableList()))
     }
 }
 
