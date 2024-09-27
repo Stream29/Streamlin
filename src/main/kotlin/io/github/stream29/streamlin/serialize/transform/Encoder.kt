@@ -19,9 +19,10 @@ class AnyEncoder(
 
     override fun beginStructure(descriptor: SerialDescriptor): CompositeEncoderTemplate {
         val compositeEncoder = when (descriptor.kind) {
-            is PolymorphicKind -> TypeTaggedEncoder(serializersModule, config)
-            else -> StructureEncoder(serializersModule, config)
-        }
+            is PolymorphicKind -> ::TypeTaggedEncoder
+            is StructureKind.MAP -> ::MapEncoder
+            else -> ::StructureEncoder
+        }(serializersModule, config)
         _record = compositeEncoder.record
         return compositeEncoder
     }
@@ -31,7 +32,7 @@ class AnyEncoder(
     }
 
     override fun encodeNull() {
-        _record = NullValue
+        _record = PrimitiveValue(null)
     }
 }
 
@@ -52,8 +53,8 @@ open class StructureEncoder(
     ) {
         this.record.add(
             PrimitiveProperty(
-                descriptor.getElementName(index),
-                value
+                PrimitiveValue(descriptor.getElementName(index)),
+                PrimitiveValue(value)
             )
         )
     }
@@ -65,12 +66,40 @@ open class StructureEncoder(
         value: T
     ) {
         val encodedValue = AnyEncoder(serializersModule, config).also { serializer.serialize(it, value) }.record
-        this.record.add(encodedValue.named(descriptor.getElementName(index)))
+        this.record.add(Property(PrimitiveValue(descriptor.getElementName(index)),encodedValue))
     }
 
     override fun encodeNull(descriptor: SerialDescriptor, index: Int) {
         if (config.encodeNull)
-            record.add(NullProperty(descriptor.getElementName(index)))
+            record.add(PrimitiveProperty.of(descriptor.getElementName(index),null))
+    }
+}
+
+@ExperimentalSerializationApi
+class MapEncoder(
+    serializersModule: SerializersModule,
+    config: TransformConfiguration
+) : StructureEncoder(serializersModule, config) {
+    override val record = StructureValue(ToMapList())
+}
+
+private class ToMapList(
+    private val container: MutableList<Property> = mutableListOf()
+) : MutableList<Property> by container {
+    var key: Any? = null
+    override fun add(element: Property): Boolean {
+        if (key == null) {
+            if (element is PrimitiveProperty) key = element.value.value
+            else throw SerializationException("Key must be a primitive type")
+        } else {
+            container.add(Property(PrimitiveValue(key),element.value))
+            key = null
+        }
+        return true
+    }
+
+    override fun toString(): String {
+        return container.toString()
     }
 }
 
@@ -100,9 +129,9 @@ class TypeTaggedEncoder(
     ) {
         val encodedValues =
             AnyEncoder(serializersModule, config)
-            .also { serializer.serialize(it, value) }
-            .record
-            .let { it as StructureValue }.component
+                .also { serializer.serialize(it, value) }
+                .record
+                .let { it as StructureValue }.component
         this.record.addAll(encodedValues)
     }
 

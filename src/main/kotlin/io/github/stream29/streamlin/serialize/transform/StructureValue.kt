@@ -3,61 +3,55 @@ package io.github.stream29.streamlin.serialize.transform
 import kotlin.Any
 
 sealed interface Property {
-    val key: String
+    val key: PrimitiveValue
     val value: Value
 
     companion object {
-        operator fun invoke(key: String, value: Value) = value.named(key)
+        operator fun invoke(key: PrimitiveValue, value: Value) =
+            when (value) {
+                is PrimitiveValue -> PrimitiveProperty(key, value)
+                is StructureValue -> StructureProperty(key, value)
+            }
     }
+    fun isNullProperty(): Boolean = value.isNullValue()
 }
 
-class PrimitiveProperty(
-    override val key: String,
-    value: Any
+data class PrimitiveProperty(
+    override val key: PrimitiveValue,
+    override val value: PrimitiveValue
 ) : Property {
-    override val value = PrimitiveValue(value)
-    override fun toString() = "Property(${key.toClarifyString()}=${value.value.toClarifyString()})"
+    companion object {
+        fun of(key: Any?, value: Any?) = PrimitiveProperty(PrimitiveValue(key), PrimitiveValue(value))
+    }
+
+    override fun toString() = "Property(${key.value.toClarifyString()}=${value.value.toClarifyString()})"
 }
 
-class NullProperty(
-    override val key: String
-) : Property {
-    override val value = NullValue
-    override fun toString() = "Property(${key.toClarifyString()}=null)"
-}
-
-class StructureProperty(
-    override val key: String,
+data class StructureProperty(
+    override val key: PrimitiveValue,
     override val value: StructureValue
 ) : Property {
-    override fun toString() = "Property(key=${key.toClarifyString()}, value=$value)"
+    companion object {
+        fun of(key: Any?, value: StructureValue) = StructureProperty(PrimitiveValue(key), value)
+    }
+    override fun toString() = "Property(key=${key.value.toClarifyString()}, value=$value)"
 }
 
-
 @Suppress("MemberVisibilityCanBePrivate")
-class StructureValue(
+data class StructureValue(
     val component: MutableList<Property> = mutableListOf()
 ) : Value, MutableList<Property> by component {
     override fun toString() = "Structure(component=$component)"
-    override fun named(name: String) = StructureProperty(name, this)
 }
 
-
-object NullValue : Value {
-    override fun toString() = "NullValue()"
-    override fun named(name: String) = NullProperty(name)
-}
-
-
-class PrimitiveValue(
-    val value: Any
+data class PrimitiveValue(
+    val value: Any?
 ) : Value {
     override fun toString(): String = "Value(${value.toClarifyString()})"
-    override fun named(name: String) = PrimitiveProperty(name, value)
 }
 
-sealed interface Value {
-    fun named(name: String): Property
+sealed interface Value{
+    fun isNullValue(): Boolean = this is PrimitiveValue && value == null
 }
 
 sealed interface ValueContainer {
