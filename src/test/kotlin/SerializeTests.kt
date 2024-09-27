@@ -1,6 +1,5 @@
 import io.github.stream29.streamlin.serialize.transform.*
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
@@ -9,27 +8,64 @@ import kotlin.reflect.typeOf
 
 @ExperimentalSerializationApi
 fun main() {
-    val testList = Test(name = null)
-    val encoder = AnyEncoder()
-    testList.encodeWith(encoder)
-    println(encoder.record)
-    val decoder = AnyDecoder(encoder.record)
-    println(decodeWith<Test>(decoder))
+    val testList = TestGeneric(12)
+    val encoder = AnyEncoder(
+        config = TransformEncodeConfig(
+            encodeNull = true,
+            encodeDefault = true
+        )
+    )
+    testList.encodeWith<TestGeneric<Int>>(encoder)
+    prettyPrintln(encoder.record)
+    val decoder = AnyDecoder(record = encoder.record)
+    prettyPrintln(decodeWith<TestGeneric<Int>>(decoder))
 }
 
 @Serializable
-sealed interface Tag
+open class Tag
 
 @Serializable
-@SerialName("Test")
-data class Test(
+@JvmInline
+value class TestInline(val value: Int = 5)
+
+@Serializable
+data class TestData(
     val name: String? = "Stream",
-    val age: TestEnum = TestEnum.A
-) : Tag
+//    @Contextual
+    val age: TestGeneric<Int> = TestGeneric<Int>(12)
+) : Tag()
 
 @Serializable
-enum class TestEnum {
-    A, B, C
+data class TestGeneric<T>(
+    val property: T
+)
+
+fun prettyPrintln(any: Any?) = prettyPrintln(any.toString())
+fun prettyPrintln(text: String) {
+    var indent = 0
+    text.asSequence().forEach {
+        when (it) {
+            '{', '[', '(' -> {
+                println(it)
+                indent += 2
+                print(" ".repeat(indent))
+            }
+
+            '}', ']', ')' -> {
+                indent -= 2
+                print("\n" + " ".repeat(indent))
+                print(it)
+            }
+
+            ',' -> {
+                println(it)
+                print(" ".repeat(indent - 1))
+            }
+
+            else -> print(it)
+        }
+    }
+    println()
 }
 
 inline fun <reified T> T.encodeWith(encoder: Encoder) =

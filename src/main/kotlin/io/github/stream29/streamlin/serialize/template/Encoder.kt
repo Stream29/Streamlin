@@ -1,6 +1,5 @@
 package io.github.stream29.streamlin.serialize.template
 
-import io.github.stream29.streamlin.serialize.transform.TransformEncodeConfig
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.SerializationStrategy
@@ -37,10 +36,6 @@ abstract class EncoderTemplate : Encoder {
     override fun encodeInt(value: Int) = encodePrimitive(value)
 
     override fun encodeLong(value: Long) = encodePrimitive(value)
-
-    override fun encodeNull() {
-        // Do nothing.
-    }
 
     override fun encodeShort(value: Short) = encodePrimitive(value)
 
@@ -85,6 +80,10 @@ abstract class CompositeEncoderTemplate : CompositeEncoder {
 
             override fun encodePrimitive(value: Any) {
                 encodePrimitiveElement(descriptor, index, value)
+            }
+
+            override fun encodeNull() {
+                encodeNull(descriptor, index)
             }
 
             override fun beginStructure(descriptor: SerialDescriptor): CompositeEncoder {

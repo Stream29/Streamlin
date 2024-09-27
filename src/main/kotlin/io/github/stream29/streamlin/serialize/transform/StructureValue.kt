@@ -5,15 +5,17 @@ import kotlin.Any
 
 sealed interface Property {
     val key: String
+    val value: Value
 }
 
 @ExperimentalSerializationApi
 class PrimitiveProperty(
     override val key: String,
-    val value: Any
+    value: Any
 ) : Property {
+    override val value = PrimitiveValue(value)
     override fun toString(): String {
-        return "Property(${key.toClarifyString()}=${value.toClarifyString()})"
+        return "Property(${key.toClarifyString()}=${value.value.toClarifyString()})"
     }
 }
 
@@ -21,6 +23,7 @@ class PrimitiveProperty(
 class NullProperty(
     override val key: String
 ) : Property {
+    override val value = NullValue
     override fun toString(): String {
         return "Property(${key.toClarifyString()}=null)"
     }
@@ -29,7 +32,7 @@ class NullProperty(
 @ExperimentalSerializationApi
 class StructureProperty(
     override val key: String,
-    val value: StructureValue
+    override val value: StructureValue
 ) : Property {
     override fun toString(): String {
         return "Property(key=${key.toClarifyString()}, value=$value)"
@@ -37,9 +40,10 @@ class StructureProperty(
 }
 
 @ExperimentalSerializationApi
+@Suppress("MemberVisibilityCanBePrivate")
 class StructureValue(
     val component: MutableList<Property> = mutableListOf()
-) : Value {
+) : Value, MutableList<Property> by component {
     override fun toString(): String {
         return "Structure(component=$component)"
     }
@@ -59,15 +63,6 @@ class PrimitiveValue(
         "Value(${value.toClarifyString()})"
 }
 
-@ExperimentalSerializationApi
-class Record(
-    val component: MutableList<Value> = mutableListOf()
-) {
-    override fun toString(): String {
-        return "Record$component"
-    }
-}
-
 sealed interface Value
 
 private fun Any?.toClarifyString() =
@@ -77,3 +72,8 @@ private fun Any?.toClarifyString() =
         is Char -> "'$this'"
         else -> this.toString()
     }
+
+@ExperimentalSerializationApi
+sealed interface ValueContainer {
+    val record: Value
+}

@@ -10,29 +10,26 @@ import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
 
 @ExperimentalSerializationApi
-sealed interface ValueContainer {
-    val value: Value
-}
-
-@ExperimentalSerializationApi
 class AnyEncoder(
     override val serializersModule: SerializersModule = EmptySerializersModule(),
     val config: TransformEncodeConfig = TransformEncodeConfig()
-) : EncoderTemplate() {
-    val record = Record()
+) : EncoderTemplate(), ValueContainer {
+    private var _record: Value? = null
+    override val record
+        get() = _record ?: throw SerializationException("No value has been encoded yet")
+
     override fun beginStructure(descriptor: SerialDescriptor): CompositeEncoderTemplate {
         val compositeEncoder = StructureEncoder(serializersModule, config)
-        record.component.add(compositeEncoder.value)
+        _record = compositeEncoder.record
         return compositeEncoder
     }
 
     override fun encodePrimitive(value: Any) {
-        record.component.add(PrimitiveValue(value))
+        _record = PrimitiveValue(value)
     }
 
     override fun encodeNull() {
-        if (config.encodeNull)
-            record.component.add(NullValue)
+        _record = NullValue
     }
 }
 
@@ -41,7 +38,7 @@ class StructureEncoder(
     override val serializersModule: SerializersModule = EmptySerializersModule(),
     private val config: TransformEncodeConfig = TransformEncodeConfig()
 ) : CompositeEncoderTemplate(), ValueContainer {
-    override val value = StructureValue()
+    override val record = StructureValue()
 
     override fun shouldEncodeElementDefault(descriptor: SerialDescriptor, index: Int): Boolean =
         config.encodeDefault
@@ -51,7 +48,7 @@ class StructureEncoder(
         index: Int,
         value: Any
     ) {
-        this.value.component.add(
+        this.record.add(
             PrimitiveProperty(
                 descriptor.getElementName(index),
                 value
@@ -66,28 +63,19 @@ class StructureEncoder(
         value: T
     ) {
         val encodedValue =
-            AnyEncoder(serializersModule, config).also { serializer.serialize(it, value) }.record.component[0]
-        this.value.component.add(
+            AnyEncoder(serializersModule, config).also { serializer.serialize(it, value) }.record
+        val elementName = descriptor.getElementName(index)
+        this.record.add(
             when (encodedValue) {
-                is PrimitiveValue -> PrimitiveProperty(
-                    descriptor.getElementName(index),
-                    encodedValue.value
-                )
-
-                is StructureValue -> StructureProperty(
-                    descriptor.getElementName(index),
-                    encodedValue
-                )
-
-                is NullValue -> NullProperty(
-                    descriptor.getElementName(index)
-                )
+                is PrimitiveValue -> PrimitiveProperty(elementName, encodedValue.value)
+                is StructureValue -> StructureProperty(elementName, encodedValue)
+                is NullValue -> NullProperty(elementName)
             }
         )
     }
 
     override fun encodeNull(descriptor: SerialDescriptor, index: Int) {
         if (config.encodeNull)
-            value.component.add(NullProperty(descriptor.getElementName(index)))
+            record.add(NullProperty(descriptor.getElementName(index)))
     }
 }
