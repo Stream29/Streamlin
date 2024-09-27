@@ -1,4 +1,4 @@
-package io.github.stream29.streamlin.serialize
+package io.github.stream29.streamlin.serialize.transform
 
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -6,7 +6,6 @@ import kotlinx.serialization.encoding.*
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
 import kotlin.Any
-import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 
 @ExperimentalSerializationApi

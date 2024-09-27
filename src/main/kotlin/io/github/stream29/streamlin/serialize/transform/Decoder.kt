@@ -1,4 +1,4 @@
-package io.github.stream29.streamlin.serialize
+package io.github.stream29.streamlin.serialize.transform
 
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
