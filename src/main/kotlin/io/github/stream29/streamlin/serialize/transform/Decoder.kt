@@ -117,11 +117,11 @@ open class ListDecoder(
     serializersModule: SerializersModule = EmptySerializersModule(),
     record: StructureValue
 ) : StructureDecoder(serializersModule, record) {
+    private var count = 0
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
         if (iterator.hasNext()) {
             currentProperty = iterator.next()
-            return currentProperty.key.value as? Int
-                ?: throw SerializationException("Expected an integer key, but found ${currentProperty.key}")
+            return count ++
         } else {
             return CompositeDecoder.DECODE_DONE
         }

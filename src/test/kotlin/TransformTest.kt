@@ -87,6 +87,41 @@ class TransformTest {
             "age" to mapOf(1 to 2, 3 to 4)
         ), map)
     }
+
+    @Test
+    fun fromListTest() {
+        val list = listOf(
+            "Stream",
+            mapOf(1 to 2, 3 to 4)
+        )
+        val value = Transformer.encodeAny(list)
+        prettyPrintln(value)
+        val decoded = Transformer.decodeToMap(value)
+        assertEquals(mapOf(
+            0 to "Stream",
+            1 to mapOf(1 to 2, 3 to 4)
+        ), decoded)
+        prettyPrintln(decoded)
+    }
+
+    @Test
+    fun toListTest() {
+        val value = TestTransform()
+        val encoded = Transformer.encodeToValue(value)
+        prettyPrintln(encoded)
+        val decoded = Transformer.decodeFromValue<List<String>>(encoded)
+        prettyPrintln(decoded)
+        assertEquals(listOf("Stream"), decoded)
+    }
+
+    @Test
+    fun fromAnyTest() {
+        val encoded = Transformer.encodeAny(TestStructure())
+        prettyPrintln(encoded)
+        val decoded = Transformer.decodeFromValue<TestStructure>(encoded)
+        assertEquals(TestStructure(), decoded)
+        prettyPrintln(decoded)
+    }
 }
 
 fun compareRecursive(a: Map<*, *>, b: Map<*, *>) {
