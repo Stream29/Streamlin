@@ -1,14 +1,16 @@
 package io.github.stream29.streamlin.serialize.transform
 
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlin.Any
 
 sealed interface Property {
     val key: String
     val value: Value
+
+    companion object {
+        operator fun invoke(key: String, value: Value) = value.named(key)
+    }
 }
 
-@ExperimentalSerializationApi
 class PrimitiveProperty(
     override val key: String,
     value: Any
@@ -17,7 +19,6 @@ class PrimitiveProperty(
     override fun toString() = "Property(${key.toClarifyString()}=${value.value.toClarifyString()})"
 }
 
-@ExperimentalSerializationApi
 class NullProperty(
     override val key: String
 ) : Property {
@@ -25,7 +26,6 @@ class NullProperty(
     override fun toString() = "Property(${key.toClarifyString()}=null)"
 }
 
-@ExperimentalSerializationApi
 class StructureProperty(
     override val key: String,
     override val value: StructureValue
@@ -33,7 +33,7 @@ class StructureProperty(
     override fun toString() = "Property(key=${key.toClarifyString()}, value=$value)"
 }
 
-@ExperimentalSerializationApi
+
 @Suppress("MemberVisibilityCanBePrivate")
 class StructureValue(
     val component: MutableList<Property> = mutableListOf()
@@ -42,13 +42,13 @@ class StructureValue(
     override fun named(name: String) = StructureProperty(name, this)
 }
 
-@ExperimentalSerializationApi
+
 object NullValue : Value {
     override fun toString() = "NullValue()"
     override fun named(name: String) = NullProperty(name)
 }
 
-@ExperimentalSerializationApi
+
 class PrimitiveValue(
     val value: Any
 ) : Value {
@@ -60,7 +60,6 @@ sealed interface Value {
     fun named(name: String): Property
 }
 
-@ExperimentalSerializationApi
 sealed interface ValueContainer {
     val record: Value
 }

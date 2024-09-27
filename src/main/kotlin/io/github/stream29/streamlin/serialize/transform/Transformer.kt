@@ -27,4 +27,14 @@ open class Transformer(
 
     fun <T> encodeToValue(serializer: SerializationStrategy<T>, value: T) =
         AnyEncoder(serializersModule, configuration).also { serializer.serialize(it, value) }.record
+
+    fun encodeToValue(list: List<*>) = encodeList(list)
+
+    fun encodeToValue(map: Map<*, *>) = encodeMap(map)
+
+    fun encodeToValue(value: Any?) = encodeAny(value)
+
+    fun decodeToList(value: StructureValue) = decodeList(value)
+
+    fun decodeToMap(value: StructureValue) = decodeMap(value)
 }

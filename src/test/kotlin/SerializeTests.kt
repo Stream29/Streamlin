@@ -23,7 +23,7 @@ class SerializeTests {
     }
 
     @Test
-    fun polymorphicTest() {
+    fun polymorphicAndInlineTest() {
         val value = Transformer.encodeToValue<Tag>(TestData())
         prettyPrintln(value)
         val testData = Transformer.decodeFromValue<Tag>(value)
