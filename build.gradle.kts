@@ -1,11 +1,13 @@
 import com.vanniktech.maven.publish.JavaLibrary
 import com.vanniktech.maven.publish.JavadocJar
 import com.vanniktech.maven.publish.SonatypeHost
+import java.net.URI
 
 plugins {
     kotlin("jvm") version "2.0.10"
     kotlin("plugin.serialization") version "2.0.10"
     id("com.vanniktech.maven.publish") version "0.29.0"
+    id("maven-publish")
 }
 
 group = "io.github.stream29"
@@ -60,6 +62,27 @@ mavenPublishing {
             url.set("https://github.com/Stream29/Streamlin")
             connection.set("scm:git:git://github.com/Stream29/Streamlin.git")
             developerConnection.set("scm:git:ssh://git@github.com:Stream29/Streamlin.git")
+        }
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = URI("https://maven.pkg.github.com/Stream29/Streamlin")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")!!
+                password = System.getenv("GITHUB_TOKEN")!!
+            }
+        }
+    }
+    publications {
+        register("jar", MavenPublication::class.java) {
+            from(components["kotlin"])
+            pom {
+                url.set("https://github.com/Stream29/Streamlin.git")
+            }
         }
     }
 }
