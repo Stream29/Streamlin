@@ -57,11 +57,11 @@ fun String.toPrettyFormat(): String {
 
             in rightBracket -> {
                 level -= 2
-                if(lastChar in leftBracket) {
-                    while(buffer.last() in blank){
+                if (lastChar in leftBracket) {
+                    while (buffer.last() in blank) {
                         buffer.deleteCharAt(buffer.length - 1)
                     }
-                }else{
+                } else {
                     buffer.append("\n" + indent.repeat(level))
                 }
                 buffer.append(it)
@@ -74,10 +74,10 @@ fun String.toPrettyFormat(): String {
             }
 
             ' ' -> {
-                if (eatSpace == 0) {
+                if (eatSpace == 0)
                     buffer.append(it)
+                else
                     eatSpace--
-                }
             }
 
             else -> buffer.append(it)
