@@ -46,6 +46,20 @@ val example = Example()
 prettyPrintln(example)
 ```
 
+output:
+
+```
+Example(
+  name=Stream,
+  age=114514,
+  address=Stream's home,
+  embedded=Embedded(
+    property1=1,
+    property2=2
+  )
+)
+```
+
 ## Functional
 
 This module provides a set of functional utilities.
