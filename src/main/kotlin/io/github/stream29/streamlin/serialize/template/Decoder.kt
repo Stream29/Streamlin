@@ -7,6 +7,16 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.encoding.Decoder
 
+/**
+ * A template for implementing [Decoder].
+ *
+ * This class provides default implementations for all `decodeXxx` method
+ * and redirect to method [decodePrimitive] to decode primitive values.
+ * You should override [decodePrimitive] to provide actual decoding logic.
+ *
+ * Also, you should override [beginStructure] to provide a new instance of [CompositeDecoder]
+ * and [decodeNotNullMark] to decode nullable values.
+ */
 @ExperimentalSerializationApi
 abstract class DecoderTemplate: Decoder {
 
@@ -62,6 +72,13 @@ abstract class DecoderTemplate: Decoder {
             ?: throw SerializationException("Expected String")
 }
 
+/**
+ * A template for implementing [CompositeDecoder].
+ *
+ * This class provides default implementations for all `decodeXxxElement` method
+ * and redirect to method [decodePrimitiveElement] to decode primitive values.
+ * You should override [decodePrimitiveElement] to provide actual decoding logic.
+ */
 @ExperimentalSerializationApi
 abstract class CompositeDecoderTemplate : CompositeDecoder {
 

@@ -9,6 +9,15 @@ import kotlinx.serialization.encoding.CompositeEncoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.modules.SerializersModule
 
+/**
+ * A template for implementing [Encoder].
+ *
+ * This class provides default implementations for all `encodeXxx` method
+ * and redirect to method [encodePrimitive] to encode primitive values.
+ * You should override [encodePrimitive] to provide actual encoding logic.
+ *
+ * Also, you should override [beginStructure] to provide a new instance of [CompositeEncoder]
+ */
 @ExperimentalSerializationApi
 abstract class EncoderTemplate : Encoder {
 
@@ -42,6 +51,15 @@ abstract class EncoderTemplate : Encoder {
     override fun encodeString(value: String) = encodePrimitive(value)
 }
 
+/**
+ * A template for implementing [CompositeEncoder].
+ *
+ * This class provides default implementations for all `encodeXxxElement` method
+ * and redirect to method [encodePrimitiveElement] to encode primitive values.
+ * You should override [encodePrimitiveElement] to provide actual encoding logic.
+ *
+ * Also, you should override [encodeSerializableElement] to provide encoding for embedded serializable objects.
+ */
 @ExperimentalSerializationApi
 abstract class CompositeEncoderTemplate : CompositeEncoder {
 
