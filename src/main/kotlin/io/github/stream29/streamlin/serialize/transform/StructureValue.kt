@@ -26,7 +26,7 @@ sealed interface Property {
          */
         operator fun invoke(key: Any?, value: Value) =
             when (value) {
-                is PrimitiveValue -> PrimitiveProperty.of(key, value)
+                is PrimitiveValue -> PrimitiveProperty.of(key, value.value)
                 is StructureValue -> StructureProperty.of(key, value)
             }
     }

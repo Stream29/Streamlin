@@ -68,9 +68,9 @@ open class StructureEncoder(
         value: Any
     ) {
         this.record.add(
-            PrimitiveProperty(
-                PrimitiveValue(descriptor.getElementName(index)),
-                PrimitiveValue(value)
+            PrimitiveProperty.of(
+                descriptor.getElementName(index),
+                value
             )
         )
     }
