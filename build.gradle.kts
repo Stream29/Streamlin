@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "io.github.stream29"
-version = "2.1"
+version = "2.2"
 
 repositories {
     mavenCentral()
@@ -44,9 +44,9 @@ mavenPublishing {
         url.set("https://github.com/Stream29/Streamlin")
         licenses {
             license {
-                name.set("GNU General Public License Version 3")
-                url.set("https://www.gnu.org/licenses/gpl-3.0.html")
-                distribution.set("https://www.gnu.org/licenses/gpl-3.0.html")
+                name.set("Apache License Version 2.0")
+                url.set("https://www.apache.org/licenses/LICENSE-2.0")
+                distribution.set("https://www.apache.org/licenses/LICENSE-2.0")
             }
         }
         developers {
