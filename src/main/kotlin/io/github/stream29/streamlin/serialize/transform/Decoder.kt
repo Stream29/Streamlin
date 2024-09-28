@@ -12,6 +12,12 @@ import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
 
+/**
+ * A decoder that decodes [Value] objects to serializable objects.
+ *
+ * @param serializersModule The serializers module to use for decoding.
+ * @param record The [Value] object that the decoder decodes from.
+ */
 @ExperimentalSerializationApi
 class AnyDecoder(
     override val serializersModule: SerializersModule = EmptySerializersModule(),
@@ -38,7 +44,12 @@ class AnyDecoder(
 
 }
 
-
+/**
+ * A decoder that decodes [StructureValue] objects to serializable objects.
+ *
+ * @param serializersModule The serializers module to use for decoding.
+ * @param record The [StructureValue] object that the decoder decodes from.
+ */
 @ExperimentalSerializationApi
 open class StructureDecoder(
     override val serializersModule: SerializersModule = EmptySerializersModule(),
@@ -89,6 +100,13 @@ open class StructureDecoder(
         )
 }
 
+/**
+ * A decoder that decodes [StructureValue] objects as [PolymorphicKind].
+ * It reads the type tag by the first [PrimitiveProperty] and decodes the object based on the type tag.
+ *
+ * @param serializersModule The serializers module to use for decoding.
+ * @param record The [StructureValue] object that the decoder decodes from.
+ */
 @ExperimentalSerializationApi
 class TypeTaggedDecoder(
     serializersModule: SerializersModule = EmptySerializersModule(),
@@ -112,6 +130,12 @@ class TypeTaggedDecoder(
     }
 }
 
+/**
+ * A decoder that decodes [StructureValue] objects as [StructureKind.LIST].
+ *
+ * @param serializersModule The serializers module to use for decoding.
+ * @param record The [StructureValue] object that the decoder decodes from.
+ */
 @ExperimentalSerializationApi
 open class ListDecoder(
     serializersModule: SerializersModule = EmptySerializersModule(),
@@ -121,13 +145,19 @@ open class ListDecoder(
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
         if (iterator.hasNext()) {
             currentProperty = iterator.next()
-            return count ++
+            return count++
         } else {
             return CompositeDecoder.DECODE_DONE
         }
     }
 }
 
+/**
+ * A decoder that decodes [StructureValue] objects as [StructureKind.MAP].
+ *
+ * @param serializersModule The serializers module to use for decoding.
+ * @param record The [StructureValue] object that the decoder decodes from.
+ */
 @ExperimentalSerializationApi
 class MapDecoder(
     serializersModule: SerializersModule = EmptySerializersModule(),
