@@ -8,6 +8,14 @@ import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.modules.SerializersModule
 
+/**
+ * An encoder that encodes serializable objects to a [Value] object.
+ *
+ * @param serializersModule The serializers module to use for encoding.
+ * @param config The configuration to use for encoding.
+ *
+ * @property record The [Value] object that the encoder encodes to.
+ */
 @ExperimentalSerializationApi
 class AnyEncoder(
     override val serializersModule: SerializersModule,
@@ -36,6 +44,14 @@ class AnyEncoder(
     }
 }
 
+/**
+ * A composite encoder that encodes structures to a [StructureValue] object.
+ *
+ * @param serializersModule The serializers module to use for encoding.
+ * @param config The configuration to use for encoding.
+ *
+ * @property record The [StructureValue] object that the encoder encodes to.
+ */
 @ExperimentalSerializationApi
 open class StructureEncoder(
     final override val serializersModule: SerializersModule,
@@ -66,7 +82,7 @@ open class StructureEncoder(
         value: T
     ) {
         val encodedValue = AnyEncoder(serializersModule, config).also { serializer.serialize(it, value) }.record
-        this.record.add(Property(PrimitiveValue(descriptor.getElementName(index)),encodedValue))
+        this.record.add(Property(descriptor.getElementName(index),encodedValue))
     }
 
     override fun encodeNull(descriptor: SerialDescriptor, index: Int) {
@@ -75,6 +91,13 @@ open class StructureEncoder(
     }
 }
 
+/**
+ * A composite encoder that encodes maps to a [StructureValue] object.
+ * It treats the elements as key-value pairs and encodes them as a [StructureValue].
+ *
+ * @param serializersModule The serializers module to use for encoding.
+ * @param config The configuration to use for encoding.
+ */
 @ExperimentalSerializationApi
 class MapEncoder(
     serializersModule: SerializersModule,
@@ -83,6 +106,14 @@ class MapEncoder(
     override val record = StructureValue(ToMapList())
 }
 
+/**
+ * A list that writes like a list but reads like a map.
+ * When writing, it receives a [Property] and treats it as a map key or value.
+ * Every 2 properties, the first is used as the key and the second as the value, consisting the result property.
+ * Then it inserts the property into the list.
+ *
+ * @param container The underlying list to store properties.
+ */
 private class ToMapList(
     private val container: MutableList<Property> = mutableListOf()
 ) : MutableList<Property> by container {
@@ -92,7 +123,7 @@ private class ToMapList(
             if (element is PrimitiveProperty) key = element.value.value
             else throw SerializationException("Key must be a primitive type")
         } else {
-            container.add(Property(PrimitiveValue(key),element.value))
+            container.add(Property(key,element.value))
             key = null
         }
         return true
@@ -103,6 +134,14 @@ private class ToMapList(
     }
 }
 
+/**
+ * A composite encoder that encodes serializable polymorphic objects to a [StructureValue] object.
+ * It uses the type tag to record the type of the object to be encoded.
+ * The type tag is encoded as a [PrimitiveProperty] with the key "type", as the first property of the [record].
+ *
+ * @param serializersModule The serializers module to use for encoding.
+ * @param config The configuration to use for encoding.
+ */
 @ExperimentalSerializationApi
 class TypeTaggedEncoder(
     override val serializersModule: SerializersModule,

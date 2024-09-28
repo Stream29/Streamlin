@@ -136,9 +136,9 @@ class MapDecoder(
     var count = 0
     override val iterator = sequence {
         record.forEach {
-            yield(Property(PrimitiveValue(count), it.key))
+            yield(Property(count, it.key))
             count++
-            yield(Property(PrimitiveValue(count), it.value))
+            yield(Property(count, it.value))
             count++
         }
     }.iterator()

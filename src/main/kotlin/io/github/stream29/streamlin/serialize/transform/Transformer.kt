@@ -28,13 +28,13 @@ open class Transformer(
 
     fun encodeAny(list: List<*>) = StructureValue().apply {
         list.forEachIndexed { index, element ->
-            add(Property(PrimitiveValue(index), encodeAny(element)))
+            add(Property(index, encodeAny(element)))
         }
     }
 
     fun encodeAny(map: Map<*, *>) = StructureValue().apply {
         map.forEach { (key, value) ->
-            add(Property(PrimitiveValue(key), encodeAny(value)))
+            add(Property(key, encodeAny(value)))
         }
     }
 
@@ -53,7 +53,7 @@ open class Transformer(
                 .asSequence()
                 .filter { !it.isSynthetic }
                 .map { it.isAccessible = true; it }
-                .map { Property(PrimitiveValue(it.name), encodeAny(it.get(value))) }
+                .map { Property(it.name, encodeAny(it.get(value))) }
                 .toMutableList()
                 .let { StructureValue(it) }
         }
