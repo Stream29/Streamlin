@@ -18,7 +18,7 @@ import kotlinx.serialization.modules.SerializersModule
  *
  * Also, you should override [beginStructure] to provide a new instance of [CompositeEncoder]
  */
-@ExperimentalSerializationApi
+@OptIn(ExperimentalSerializationApi::class)
 abstract class EncoderTemplate : Encoder {
 
     /**
@@ -60,7 +60,7 @@ abstract class EncoderTemplate : Encoder {
  *
  * Also, you should override [encodeSerializableElement] to provide encoding for embedded serializable objects.
  */
-@ExperimentalSerializationApi
+@OptIn(ExperimentalSerializationApi::class)
 abstract class CompositeEncoderTemplate : CompositeEncoder {
 
     /**

@@ -18,7 +18,7 @@ import kotlinx.serialization.modules.SerializersModule
  * @param serializersModule The serializers module to use for decoding.
  * @param record The [Value] object that the decoder decodes from.
  */
-@ExperimentalSerializationApi
+@OptIn(ExperimentalSerializationApi::class)
 class AnyDecoder(
     override val serializersModule: SerializersModule = EmptySerializersModule(),
     override val record: Value
@@ -50,7 +50,7 @@ class AnyDecoder(
  * @param serializersModule The serializers module to use for decoding.
  * @param record The [StructureValue] object that the decoder decodes from.
  */
-@ExperimentalSerializationApi
+@OptIn(ExperimentalSerializationApi::class)
 open class StructureDecoder(
     override val serializersModule: SerializersModule = EmptySerializersModule(),
     final override val record: StructureValue
@@ -107,7 +107,6 @@ open class StructureDecoder(
  * @param serializersModule The serializers module to use for decoding.
  * @param record The [StructureValue] object that the decoder decodes from.
  */
-@ExperimentalSerializationApi
 class TypeTaggedDecoder(
     serializersModule: SerializersModule = EmptySerializersModule(),
     record: StructureValue
@@ -136,7 +135,6 @@ class TypeTaggedDecoder(
  * @param serializersModule The serializers module to use for decoding.
  * @param record The [StructureValue] object that the decoder decodes from.
  */
-@ExperimentalSerializationApi
 open class ListDecoder(
     serializersModule: SerializersModule = EmptySerializersModule(),
     record: StructureValue
@@ -158,7 +156,6 @@ open class ListDecoder(
  * @param serializersModule The serializers module to use for decoding.
  * @param record The [StructureValue] object that the decoder decodes from.
  */
-@ExperimentalSerializationApi
 class MapDecoder(
     serializersModule: SerializersModule = EmptySerializersModule(),
     record: StructureValue

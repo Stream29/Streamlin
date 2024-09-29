@@ -19,7 +19,7 @@ repositories {
 
 dependencies {
     testImplementation(kotlin("test"))
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.7.2")
+    api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.7.2")
 }
 
 tasks.test {

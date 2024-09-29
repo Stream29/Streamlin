@@ -17,7 +17,7 @@ import kotlinx.serialization.encoding.Decoder
  * Also, you should override [beginStructure] to provide a new instance of [CompositeDecoder]
  * and [decodeNotNullMark] to decode nullable values.
  */
-@ExperimentalSerializationApi
+@OptIn(ExperimentalSerializationApi::class)
 abstract class DecoderTemplate: Decoder {
 
     /**
@@ -79,7 +79,7 @@ abstract class DecoderTemplate: Decoder {
  * and redirect to method [decodePrimitiveElement] to decode primitive values.
  * You should override [decodePrimitiveElement] to provide actual decoding logic.
  */
-@ExperimentalSerializationApi
+@OptIn(ExperimentalSerializationApi::class)
 abstract class CompositeDecoderTemplate : CompositeDecoder {
 
     /**
@@ -148,7 +148,7 @@ abstract class CompositeDecoderTemplate : CompositeDecoder {
             )
 }
 
-@ExperimentalSerializationApi
+@OptIn(ExperimentalSerializationApi::class)
 internal fun SerialDescriptor.findByName(serialName: String): Int? {
     for (i in 0..<this.elementsCount) {
         if (getElementName(i) == serialName) {

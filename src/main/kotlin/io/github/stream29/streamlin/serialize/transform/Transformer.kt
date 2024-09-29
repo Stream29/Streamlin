@@ -11,7 +11,6 @@ import kotlinx.serialization.descriptors.*
  * @param serializersModule The serializers module to use for encoding and decoding.
  * @param configuration The configuration to use for encoding and decoding.
  */
-@ExperimentalSerializationApi
 open class Transformer(
     override val serializersModule: SerializersModule,
     val configuration: TransformConfiguration

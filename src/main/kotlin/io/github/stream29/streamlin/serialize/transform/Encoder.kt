@@ -16,7 +16,7 @@ import kotlinx.serialization.modules.SerializersModule
  *
  * @property record The [Value] object that the encoder encodes to.
  */
-@ExperimentalSerializationApi
+@OptIn(ExperimentalSerializationApi::class)
 class AnyEncoder(
     override val serializersModule: SerializersModule,
     private val config: TransformConfiguration
@@ -52,7 +52,7 @@ class AnyEncoder(
  *
  * @property record The [StructureValue] object that the encoder encodes to.
  */
-@ExperimentalSerializationApi
+@OptIn(ExperimentalSerializationApi::class)
 open class StructureEncoder(
     final override val serializersModule: SerializersModule,
     private val config: TransformConfiguration
@@ -98,7 +98,6 @@ open class StructureEncoder(
  * @param serializersModule The serializers module to use for encoding.
  * @param config The configuration to use for encoding.
  */
-@ExperimentalSerializationApi
 class MapEncoder(
     serializersModule: SerializersModule,
     config: TransformConfiguration
@@ -142,7 +141,7 @@ private class ToMapList(
  * @param serializersModule The serializers module to use for encoding.
  * @param config The configuration to use for encoding.
  */
-@ExperimentalSerializationApi
+@OptIn(ExperimentalSerializationApi::class)
 class TypeTaggedEncoder(
     override val serializersModule: SerializersModule,
     private val config: TransformConfiguration
