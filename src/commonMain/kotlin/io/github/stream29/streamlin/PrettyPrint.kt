@@ -59,7 +59,7 @@ fun String.toPrettyFormat(): String {
                 level -= 2
                 if (lastChar in leftBracket) {
                     while (buffer.last() in blank) {
-                        buffer.deleteCharAt(buffer.length - 1)
+                        buffer.deleteAt(buffer.length - 1)
                     }
                 } else {
                     buffer.append("\n" + indent.repeat(level))

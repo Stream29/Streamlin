@@ -1,5 +1,7 @@
 package io.github.stream29.streamlin
 
+import kotlin.jvm.JvmName
+
 /**
  * Filters a value based on a predicate.
  *

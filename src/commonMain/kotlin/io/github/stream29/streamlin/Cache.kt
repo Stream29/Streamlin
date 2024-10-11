@@ -1,5 +1,6 @@
 package io.github.stream29.streamlin
 
+import kotlin.jvm.JvmName
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 

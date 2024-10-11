@@ -3,7 +3,6 @@ import io.github.stream29.streamlin.serialize.transform.StructureValue
 import io.github.stream29.streamlin.serialize.transform.Transformer
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationException
-import org.junit.jupiter.api.assertThrows
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -11,81 +10,87 @@ import kotlin.test.assertEquals
 class TransformTest {
     @Test
     fun polymorphicAndInlineTest() {
-        val value = Transformer { encodeNull = false }.encodeToValue<TestTag>(TestData())
+        val value = Transformer { encodeNull = false }.fromSerializable<TestTag>(TestData())
         prettyPrintln(value)
-        val testData = Transformer.decodeFromValue<TestTag>(value)
+        val testData = Transformer.toSerializable<TestTag>(value)
         assertEquals(TestData("Stream", TestInline(12)), testData)
         prettyPrintln(testData)
     }
 
     @Test
     fun genericSafetyTest() {
-        val value = Transformer.encodeToValue(TestGeneric(12))
+        val value = Transformer.fromSerializable(TestGeneric(12))
         prettyPrintln(value)
-        assertThrows<SerializationException>("Expected Long") { Transformer.decodeFromValue<TestGeneric<Long>>(value) }
-        val testGeneric = Transformer.decodeFromValue<TestGeneric<Int>>(value)
+        try {
+            Transformer.toSerializable<TestGeneric<Long>>(value)
+        } catch (e: SerializationException) {
+            assertEquals("Expected Long", e.message)
+        }
+        val testGeneric = Transformer.toSerializable<TestGeneric<Int>>(value)
         prettyPrintln(testGeneric)
     }
 
     @Test
     fun defaultTest() {
-        assertEquals(Transformer { encodeDefault = false }.encodeToValue(TestDefault()), StructureValue())
-        val value = Transformer.encodeToValue(TestDefault())
+        assertEquals(Transformer { encodeDefault = false }.fromSerializable(TestDefault()), StructureValue())
+        val value = Transformer.fromSerializable(TestDefault())
         prettyPrintln(value)
-        val testDefault = Transformer.decodeFromValue<TestDefault>(value)
+        val testDefault = Transformer.toSerializable<TestDefault>(value)
         prettyPrintln(testDefault)
         assertEquals(TestDefault("Stream", 12), testDefault)
     }
 
     @Test
     fun nullableTest() {
-        val value = Transformer { encodeNull = true }.encodeToValue(TestNullable())
+        val value = Transformer { encodeNull = true }.fromSerializable(TestNullable())
         prettyPrintln(value)
-        val testNullable = Transformer.decodeFromValue<TestNullable>(value)
+        val testNullable = Transformer.toSerializable<TestNullable>(value)
         prettyPrintln(testNullable)
         assertEquals(TestNullable(null, null), testNullable)
     }
 
     @Test
     fun notEncodeNullableTest() {
-        val value = Transformer { encodeNull = false }.encodeToValue(TestNullable())
+        val value = Transformer { encodeNull = false }.fromSerializable(TestNullable())
         prettyPrintln(value)
         assertEquals(StructureValue(), value)
     }
 
     @Test
     fun transformTest() {
-        val value = Transformer.encodeToValue(TestDefault())
+        val value = Transformer.fromSerializable(TestDefault())
         prettyPrintln(value)
-        val transformed = Transformer.decodeFromValue<TestTransform>(value)
+        val transformed = Transformer.toSerializable<TestTransform>(value)
         assertEquals(TestTransform(), transformed)
         prettyPrintln(transformed)
     }
 
     @Test
     fun fromMapTest() {
-        val value = Transformer.encodeAny(
+        val value = Transformer.fromMap(
             mapOf(
                 "name" to "Stream",
-                "age" to mapOf(1 to 2, 3 to 4)
+                "age" to TestInline(12)
             )
         )
         prettyPrintln(value)
-        val decoded = Transformer.decodeFromValue<TestStructure>(value)
-        assertEquals(TestStructure(), decoded)
+        val decoded = Transformer.toSerializable<TestGenericHolder>(value)
+        assertEquals(TestGenericHolder(), decoded)
         prettyPrintln(decoded)
     }
 
     @Test
     fun toMapTest() {
-        val value = Transformer.encodeToValue(TestStructure())
+        val value = Transformer.fromSerializable(TestStructure())
         prettyPrintln(value)
-        val map = Transformer.decodeToMap(value as StructureValue)
+        val map = Transformer.toMap(value as StructureValue)
         prettyPrintln(map)
-        compareRecursive(mapOf(
-            "name" to "Stream",
-            "age" to mapOf(1 to 2, 3 to 4)
-        ), map)
+        compareRecursive(
+            mapOf(
+                "name" to "Stream",
+                "age" to mapOf(1 to 2, 3 to 4)
+            ), map
+        )
     }
 
     @Test
@@ -94,33 +99,26 @@ class TransformTest {
             "Stream",
             mapOf(1 to 2, 3 to 4)
         )
-        val value = Transformer.encodeAny(list)
+        val value = Transformer.fromList(list)
         prettyPrintln(value)
-        val decoded = Transformer.decodeToMap(value)
-        assertEquals(mapOf(
-            0 to "Stream",
-            1 to mapOf(1 to 2, 3 to 4)
-        ), decoded)
+        val decoded = Transformer.toMap(value)
+        assertEquals(
+            mapOf(
+                0 to "Stream",
+                1 to mapOf(1 to 2, 3 to 4)
+            ), decoded
+        )
         prettyPrintln(decoded)
     }
 
     @Test
     fun toListTest() {
         val value = TestTransform()
-        val encoded = Transformer.encodeToValue(value)
+        val encoded = Transformer.fromSerializable(value)
         prettyPrintln(encoded)
-        val decoded = Transformer.decodeFromValue<List<String>>(encoded)
+        val decoded = Transformer.toSerializable<List<String>>(encoded)
         prettyPrintln(decoded)
         assertEquals(listOf("Stream"), decoded)
-    }
-
-    @Test
-    fun fromAnyTest() {
-        val encoded = Transformer.encodeAny(TestStructure())
-        prettyPrintln(encoded)
-        val decoded = Transformer.decodeFromValue<TestStructure>(encoded)
-        assertEquals(TestStructure(), decoded)
-        prettyPrintln(decoded)
     }
 }
 

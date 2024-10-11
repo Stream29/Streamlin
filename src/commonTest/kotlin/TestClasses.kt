@@ -1,4 +1,5 @@
 import kotlinx.serialization.Serializable
+import kotlin.jvm.JvmInline
 
 @Serializable
 data class TestStructure(
@@ -39,4 +40,10 @@ data class TestData(
 @Serializable
 data class TestGeneric<T>(
     val property: T
+)
+
+@Serializable
+data class TestGenericHolder(
+    val name : String = "Stream",
+    val generic: TestGeneric<Int> = TestGeneric(12)
 )

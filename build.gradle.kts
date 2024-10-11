@@ -1,41 +1,58 @@
-import com.vanniktech.maven.publish.JavaLibrary
-import com.vanniktech.maven.publish.JavadocJar
 import com.vanniktech.maven.publish.SonatypeHost
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.net.URI
 
 plugins {
-    kotlin("jvm") version "2.0.10"
+    kotlin("multiplatform") version "2.0.10"
     kotlin("plugin.serialization") version "2.0.10"
     id("com.vanniktech.maven.publish") version "0.29.0"
-    id("maven-publish")
 }
 
 group = "io.github.stream29"
-version = "2.3"
+version = "2.4"
 
 repositories {
     mavenCentral()
 }
 
-dependencies {
-    testImplementation(kotlin("test"))
-    api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.7.2")
-}
-
-tasks.test {
-    useJUnitPlatform()
-}
 kotlin {
-    jvmToolchain(8)
+    jvm()
+//    androidTarget {
+//        publishLibraryVariants("release")
+//        @OptIn(ExperimentalKotlinGradlePluginApi::class)
+//        compilerOptions {
+//            jvmTarget.set(JvmTarget.JVM_1_8)
+//        }
+//    }
+    linuxX64()
+
+    sourceSets {
+        val commonMain by getting {
+            dependencies {
+                kotlin("reflect")
+                api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.7.2")
+            }
+        }
+        val commonTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+            }
+        }
+    }
 }
 
 mavenPublishing {
-    configure(
-        JavaLibrary(
-            JavadocJar.Javadoc(),
-            true
-        )
-    )
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = URI("https://maven.pkg.github.com/Stream29/Streamlin")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")!!
+                password = System.getenv("GITHUB_TOKEN")!!
+            }
+        }
+    }
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
     signAllPublications()
     coordinates((group as String), "streamlin", version.toString())
@@ -62,27 +79,6 @@ mavenPublishing {
             url.set("https://github.com/Stream29/Streamlin")
             connection.set("scm:git:git://github.com/Stream29/Streamlin.git")
             developerConnection.set("scm:git:ssh://git@github.com:Stream29/Streamlin.git")
-        }
-    }
-}
-
-publishing {
-    repositories {
-        maven {
-            name = "GitHubPackages"
-            url = URI("https://maven.pkg.github.com/Stream29/Streamlin")
-            credentials {
-                username = System.getenv("GITHUB_ACTOR")!!
-                password = System.getenv("GITHUB_TOKEN")!!
-            }
-        }
-    }
-    publications {
-        register("jar", MavenPublication::class.java) {
-            from(components["kotlin"])
-            pom {
-                url.set("https://github.com/Stream29/Streamlin.git")
-            }
         }
     }
 }
