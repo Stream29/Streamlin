@@ -3,6 +3,7 @@ package io.github.stream29.streamlin.serialize.transform
 import kotlinx.serialization.*
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
+import kotlin.jvm.JvmName
 
 /**
  * A transformer that transforms [Serializable] objects, [List] and [Map] to and from [Value] objects.
@@ -146,6 +147,7 @@ open class Transformer(
      * @param T The type of the object to decode.
      * @receiver The value to decode.
      */
+    @JvmName("contextToSerializable")
     inline fun <reified T> Value.toSerializable(): T =
         toSerializable<T>(this)
 
@@ -165,6 +167,7 @@ open class Transformer(
      *
      * @receiver The value to decode.
      */
+    @JvmName("contextToMap")
     fun Value.toMap(): Map<*, *> =
         toMap(this)
 
@@ -188,6 +191,7 @@ open class Transformer(
      *
      * @receiver The value to decode.
      */
+    @JvmName("contextToMap")
     fun StructureValue.toMap(): Map<*, *> =
         toMap(this)
 }
