@@ -1,6 +1,4 @@
 import com.vanniktech.maven.publish.SonatypeHost
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.net.URI
 
 plugins {
@@ -18,14 +16,7 @@ repositories {
 
 kotlin {
     jvm()
-//    androidTarget {
-//        publishLibraryVariants("release")
-//        @OptIn(ExperimentalKotlinGradlePluginApi::class)
-//        compilerOptions {
-//            jvmTarget.set(JvmTarget.JVM_1_8)
-//        }
-//    }
-    linuxX64()
+    js().browser()
 
     sourceSets {
         val commonMain by getting {
@@ -43,16 +34,6 @@ kotlin {
 }
 
 mavenPublishing {
-    repositories {
-        maven {
-            name = "GitHubPackages"
-            url = URI("https://maven.pkg.github.com/Stream29/Streamlin")
-            credentials {
-                username = System.getenv("GITHUB_ACTOR")!!
-                password = System.getenv("GITHUB_TOKEN")!!
-            }
-        }
-    }
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
     signAllPublications()
     coordinates((group as String), "streamlin", version.toString())
@@ -79,6 +60,19 @@ mavenPublishing {
             url.set("https://github.com/Stream29/Streamlin")
             connection.set("scm:git:git://github.com/Stream29/Streamlin.git")
             developerConnection.set("scm:git:ssh://git@github.com:Stream29/Streamlin.git")
+        }
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = URI("https://maven.pkg.github.com/Stream29/Streamlin")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")!!
+                password = System.getenv("GITHUB_TOKEN")!!
+            }
         }
     }
 }
