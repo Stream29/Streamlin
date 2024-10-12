@@ -1,6 +1,5 @@
 import io.github.stream29.streamlin.prettyPrintln
-import io.github.stream29.streamlin.serialize.transform.StructureValue
-import io.github.stream29.streamlin.serialize.transform.Transformer
+import io.github.stream29.streamlin.serialize.transform.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationException
 import kotlin.test.Test
