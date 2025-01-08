@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "io.github.stream29"
-version = "2.4"
+version = "2.5.0"
 
 repositories {
     mavenCentral()
