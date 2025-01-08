@@ -45,9 +45,9 @@ fun String.toPrettyFormat(): String {
     val indent = " "
     val buffer = StringBuilder()
     var lastChar: Char? = null
-    var eatSpace = 0
+    var eatSpace = -1
     var level = 0
-    this.forEach {
+    this.forEachIndexed { index, it ->
         when (it) {
             in leftBracket -> {
                 buffer.append("$it\n")
@@ -70,15 +70,10 @@ fun String.toPrettyFormat(): String {
             ',' -> {
                 buffer.append("$it\n")
                 buffer.append(indent.repeat(level))
-                eatSpace++
+                eatSpace = index + 1
             }
 
-            ' ' -> {
-                if (eatSpace == 0)
-                    buffer.append(it)
-                else
-                    eatSpace--
-            }
+            ' ' -> if (eatSpace != index) buffer.append(it)
 
             else -> buffer.append(it)
         }
