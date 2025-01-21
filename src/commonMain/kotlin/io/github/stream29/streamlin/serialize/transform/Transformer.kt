@@ -10,9 +10,9 @@ import kotlinx.serialization.modules.SerializersModule
  * @param serializersModule The serializers module to use for encoding and decoding.
  * @param configuration The configuration to use for encoding and decoding.
  */
-open class Transformer(
+public open class Transformer(
     override val serializersModule: SerializersModule,
-    val configuration: TransformConfiguration
+    public val configuration: TransformConfiguration
 ) : SerialFormat {
 
     /**
@@ -20,7 +20,7 @@ open class Transformer(
      *
      * @param block The configuration block to apply to the transformer.
      */
-    constructor(block: TransformConfiguration.() -> Unit) : this(
+    public constructor(block: TransformConfiguration.() -> Unit) : this(
         EmptySerializersModule(),
         TransformConfiguration().apply(block)
     )
@@ -28,7 +28,7 @@ open class Transformer(
     /**
      * The default transformer with the empty serializers module and default configuration.
      */
-    companion object Default : Transformer(EmptySerializersModule(), TransformConfiguration())
+    public companion object Default : Transformer(EmptySerializersModule(), TransformConfiguration())
 
     /**
      * Decodes a [Value] object to a [Serializable] object.
@@ -36,7 +36,7 @@ open class Transformer(
      * @param T The type of the object to decode.
      * @receiver The value to decode.
      */
-    inline fun <reified T> Value.toSerializable(): T =
+    public inline fun <reified T> Value.toSerializable(): T =
         toSerializable<T>(this)
 
     /**
@@ -44,7 +44,7 @@ open class Transformer(
      *
      * @receiver The value to decode.
      */
-    fun Value.toMap(): Map<*, *> =
+    public fun Value.toMap(): Map<*, *> =
         toMap(this)
 
     /**
@@ -52,7 +52,7 @@ open class Transformer(
      *
      * @receiver The value to decode.
      */
-    fun StructureValue.toMap(): Map<*, *> =
+    public fun StructureValue.toMap(): Map<*, *> =
         toMap(this)
 }
 
@@ -64,7 +64,7 @@ open class Transformer(
  * @param value The object to encode.
  * @return The encoded value.
  */
-fun <T> Transformer.encodeToValue(serializer: SerializationStrategy<T>, value: T) =
+public fun <T> Transformer.encodeToValue(serializer: SerializationStrategy<T>, value: T) =
     AnyEncoder(serializersModule, configuration).also { serializer.serialize(it, value) }.record
 
 /**
@@ -74,7 +74,7 @@ fun <T> Transformer.encodeToValue(serializer: SerializationStrategy<T>, value: T
  * @param value The object to encode.
  * @return The encoded value.
  */
-inline fun <reified T> Transformer.fromSerializable(value: T) = encodeToValue(serializersModule.serializer(), value)
+public inline fun <reified T> Transformer.fromSerializable(value: T) = encodeToValue(serializersModule.serializer(), value)
 
 /**
  * Encodes a [List] to a [Value] object.
@@ -84,7 +84,7 @@ inline fun <reified T> Transformer.fromSerializable(value: T) = encodeToValue(se
  * @param list The [List] to encode.
  * @return The encoded value.
  */
-fun Transformer.fromList(list: List<*>) = StructureValue().also {
+public fun Transformer.fromList(list: List<*>) = StructureValue().also {
     list.forEachIndexed { index, element ->
         it.add(Property(index, fromAny(element)))
     }
@@ -98,7 +98,7 @@ fun Transformer.fromList(list: List<*>) = StructureValue().also {
  * @param map The [Map] to encode.
  * @return The encoded value.
  */
-fun Transformer.fromMap(map: Map<*, *>): StructureValue =
+public fun Transformer.fromMap(map: Map<*, *>): StructureValue =
     StructureValue().also {
         map.forEach { (key, value) ->
             it.add(Property(key, fromAny(value)))
@@ -114,7 +114,7 @@ fun Transformer.fromMap(map: Map<*, *>): StructureValue =
  * @return The encoded value.
  */
 @OptIn(ExperimentalSerializationApi::class)
-fun Transformer.fromAny(value: Any?): Value =
+public fun Transformer.fromAny(value: Any?): Value =
     when (value) {
         null -> PrimitiveValue(null)
         is String -> PrimitiveValue(value)
@@ -142,7 +142,7 @@ fun Transformer.fromAny(value: Any?): Value =
  * @param deserializer The deserializer to use for decoding.
  * @param value The value to decode.
  */
-inline fun <reified T> Transformer.decodeFromValue(
+public inline fun <reified T> Transformer.decodeFromValue(
     deserializer: DeserializationStrategy<T>,
     value: Value
 ) = deserializer.deserialize(AnyDecoder(serializersModule, value))
@@ -153,7 +153,7 @@ inline fun <reified T> Transformer.decodeFromValue(
  * @param T The type of the object to decode.
  * @param value The value to decode.
  */
-inline fun <reified T> Transformer.decodeFromValue(
+public inline fun <reified T> Transformer.decodeFromValue(
     value: Value
 ) = decodeFromValue(serializersModule.serializer<T>(), value)
 
@@ -163,7 +163,7 @@ inline fun <reified T> Transformer.decodeFromValue(
  * @param T The type of the object to decode.
  * @param value The value to decode.
  */
-inline fun <reified T> Transformer.toSerializable(value: Value): T =
+public inline fun <reified T> Transformer.toSerializable(value: Value): T =
     decodeFromValue(value)
 
 /**
@@ -171,7 +171,7 @@ inline fun <reified T> Transformer.toSerializable(value: Value): T =
  *
  * @param value The value to decode.
  */
-fun Transformer.toMap(value: Value): Map<*, *> =
+public fun Transformer.toMap(value: Value): Map<*, *> =
     value.let {
         it as? StructureValue
             ?: throw SerializationException("Only StructureValue can be converted to Map")
@@ -182,7 +182,7 @@ fun Transformer.toMap(value: Value): Map<*, *> =
  *
  * @param value The value to decode.
  */
-fun Transformer.toMap(value: StructureValue): Map<*, *> =
+public fun Transformer.toMap(value: StructureValue): Map<*, *> =
     value.associate {
         val value = it.value
         val key = it.key

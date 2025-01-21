@@ -6,7 +6,7 @@ package io.github.stream29.streamlin.serialize.transform
  * @property encodeDefault Whether to encode default values.
  * @property encodeNull Whether to encode null values.
  */
-data class TransformConfiguration(
+public data class TransformConfiguration(
     var encodeDefault: Boolean = true,
     var encodeNull: Boolean = false
 )

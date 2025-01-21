@@ -19,36 +19,36 @@ import kotlinx.serialization.modules.SerializersModule
  * Also, you should override [beginStructure] to provide a new instance of [CompositeEncoder]
  */
 @OptIn(ExperimentalSerializationApi::class)
-abstract class EncoderTemplate : Encoder {
+public abstract class EncoderTemplate : Encoder {
 
     /**
      * Encodes a primitive value.
      * Corresponding kind is in [PrimitiveKind].
      */
-    abstract fun encodePrimitive(value: Any)
+    public abstract fun encodePrimitive(value: Any)
 
-    override fun encodeBoolean(value: Boolean) = encodePrimitive(value)
+    override fun encodeBoolean(value: Boolean): Unit = encodePrimitive(value)
 
-    override fun encodeByte(value: Byte) = encodePrimitive(value)
+    override fun encodeByte(value: Byte): Unit = encodePrimitive(value)
 
-    override fun encodeChar(value: Char) = encodePrimitive(value)
+    override fun encodeChar(value: Char): Unit = encodePrimitive(value)
 
-    override fun encodeDouble(value: Double) = encodePrimitive(value)
+    override fun encodeDouble(value: Double): Unit = encodePrimitive(value)
 
-    override fun encodeEnum(enumDescriptor: SerialDescriptor, index: Int) =
+    override fun encodeEnum(enumDescriptor: SerialDescriptor, index: Int): Unit =
         encodeString(enumDescriptor.getElementName(index))
 
-    override fun encodeFloat(value: Float) = encodePrimitive(value)
+    override fun encodeFloat(value: Float): Unit = encodePrimitive(value)
 
-    override fun encodeInline(descriptor: SerialDescriptor) = this
+    override fun encodeInline(descriptor: SerialDescriptor): EncoderTemplate = this
 
-    override fun encodeInt(value: Int) = encodePrimitive(value)
+    override fun encodeInt(value: Int): Unit = encodePrimitive(value)
 
-    override fun encodeLong(value: Long) = encodePrimitive(value)
+    override fun encodeLong(value: Long): Unit = encodePrimitive(value)
 
-    override fun encodeShort(value: Short) = encodePrimitive(value)
+    override fun encodeShort(value: Short): Unit = encodePrimitive(value)
 
-    override fun encodeString(value: String) = encodePrimitive(value)
+    override fun encodeString(value: String): Unit = encodePrimitive(value)
 }
 
 /**
@@ -61,19 +61,19 @@ abstract class EncoderTemplate : Encoder {
  * Also, you should override [encodeSerializableElement] to provide encoding for embedded serializable objects.
  */
 @OptIn(ExperimentalSerializationApi::class)
-abstract class CompositeEncoderTemplate : CompositeEncoder {
+public abstract class CompositeEncoderTemplate : CompositeEncoder {
 
     /**
      * Encodes [value] associated with an element
      * at the given [index] in [serial descriptor][descriptor].
      * The element at the given [index] should have [PrimitiveKind] kind.
      */
-    abstract fun encodePrimitiveElement(descriptor: SerialDescriptor, index: Int, value: Any)
+    public abstract fun encodePrimitiveElement(descriptor: SerialDescriptor, index: Int, value: Any)
 
     /**
      * Called when calling [encodeNullableSerializableElement] with a `null` value.
      */
-    open fun encodeNull(descriptor: SerialDescriptor, index: Int) {
+    public open fun encodeNull(descriptor: SerialDescriptor, index: Int) {
         // Do nothing.
     }
 

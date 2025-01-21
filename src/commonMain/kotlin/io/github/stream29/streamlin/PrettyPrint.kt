@@ -7,7 +7,7 @@ package io.github.stream29.streamlin
  *
  * @param any The object to pretty print.
  */
-fun prettyPrintln(any: Any?) {
+public fun prettyPrintln(any: Any?) {
     prettyPrint(any)
     println()
 }
@@ -19,7 +19,7 @@ fun prettyPrintln(any: Any?) {
  *
  * @param any The object to pretty print.
  */
-fun prettyPrint(any: Any?) = prettyPrint(any.toString())
+public fun prettyPrint(any: Any?): Unit = prettyPrint(any.toString())
 
 /**
  * Pretty print a string and end the line.
@@ -28,7 +28,7 @@ fun prettyPrint(any: Any?) = prettyPrint(any.toString())
  *
  * @param text The string to pretty print.
  */
-fun prettyPrint(text: String) = print(text.toPrettyFormat())
+public fun prettyPrint(text: String): Unit = print(text.toPrettyFormat())
 
 private val leftBracket = setOf('{', '[', '(')
 private val rightBracket = setOf('}', ']', ')')
@@ -41,7 +41,7 @@ private val blank = setOf(' ', '\t', '\n')
  *
  * @return The pretty formatted string.
  */
-fun String.toPrettyFormat(): String {
+public fun String.toPrettyFormat(): String {
     val indent = " "
     val buffer = StringBuilder()
     var lastChar: Char? = null

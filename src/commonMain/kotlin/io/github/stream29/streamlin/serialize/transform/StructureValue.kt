@@ -13,18 +13,18 @@ import kotlinx.serialization.descriptors.*
  * @property key The key of the property.
  * @property value The value of the property.
  */
-sealed interface Property {
-    val key: PrimitiveValue
-    val value: Value
+public sealed interface Property {
+    public val key: PrimitiveValue
+    public val value: Value
 
-    companion object {
+    public companion object {
         /**
          * Creates a [Property] with the given [key] and [value].
          *
          * @param key The key of the property. Only keys of [PrimitiveKind] are allowed.
          * @param value The value of the property. Values of [PrimitiveValue] or [StructureValue] are allowed.
          */
-        operator fun invoke(key: Any?, value: Value) =
+        public operator fun invoke(key: Any?, value: Value): Property =
             when (value) {
                 is PrimitiveValue -> PrimitiveProperty.of(key, value.value)
                 is StructureValue -> StructureProperty.of(key, value)
@@ -34,7 +34,7 @@ sealed interface Property {
     /**
      * Returns `true` if the value of this property is [PrimitiveProperty] and it contains `null` value.
      */
-    fun isNullProperty(): Boolean = value.isNullValue()
+    public fun isNullProperty(): Boolean = value.isNullValue()
 }
 
 /**
@@ -43,21 +43,21 @@ sealed interface Property {
  * @property key The key of the property.
  * @property value The value of the property.
  */
-data class PrimitiveProperty(
+public data class PrimitiveProperty(
     override val key: PrimitiveValue,
     override val value: PrimitiveValue
 ) : Property {
-    companion object {
+    public companion object {
         /**
          * Creates a [PrimitiveProperty] with the given [key] and [value].
          *
          * @param key The key of the property. Should be [PrimitiveKind].
          * @param value The value of the property. Should be [PrimitiveKind].
          */
-        fun of(key: Any?, value: Any?) = PrimitiveProperty(PrimitiveValue(key), PrimitiveValue(value))
+        public fun of(key: Any?, value: Any?): PrimitiveProperty = PrimitiveProperty(PrimitiveValue(key), PrimitiveValue(value))
     }
 
-    override fun toString() = "Property(${key.value.toClarifyString()}=${value.value.toClarifyString()})"
+    override fun toString(): String = "Property(${key.value.toClarifyString()}=${value.value.toClarifyString()})"
 }
 
 /**
@@ -66,21 +66,21 @@ data class PrimitiveProperty(
  * @property key The key of the property.
  * @property value The value of the property.
  */
-data class StructureProperty(
+public data class StructureProperty(
     override val key: PrimitiveValue,
     override val value: StructureValue
 ) : Property {
-    companion object {
+    public companion object {
         /**
          * Creates a [StructureProperty] with the given [key] and [value].
          *
          * @param key The key of the property. Should be [PrimitiveKind].
          * @param value The value of the property.
          */
-        fun of(key: Any?, value: StructureValue) = StructureProperty(PrimitiveValue(key), value)
+        public fun of(key: Any?, value: StructureValue): StructureProperty = StructureProperty(PrimitiveValue(key), value)
     }
 
-    override fun toString() = "Property(key=${key.value.toClarifyString()}, value=$value)"
+    override fun toString(): String = "Property(key=${key.value.toClarifyString()}, value=$value)"
 }
 
 /**
@@ -99,10 +99,10 @@ data class StructureProperty(
  * @property component The properties of the structure.
  */
 @Suppress("MemberVisibilityCanBePrivate")
-data class StructureValue(
+public data class StructureValue(
     val component: MutableList<Property> = mutableListOf()
 ) : Value, MutableList<Property> by component {
-    override fun toString() = "Structure(component=$component)"
+    override fun toString(): String = "Structure(component=$component)"
 }
 
 /**
@@ -110,7 +110,7 @@ data class StructureValue(
  *
  * @property value The value contained by the object.
  */
-data class PrimitiveValue(
+public data class PrimitiveValue(
     val value: Any?
 ) : Value {
     override fun toString(): String = "Value(${value.toClarifyString()})"
@@ -123,15 +123,15 @@ data class PrimitiveValue(
  *
  * If the value is [StructureKind] or [PolymorphicKind], it should be [StructureValue].
  */
-sealed interface Value {
-    fun isNullValue(): Boolean = this is PrimitiveValue && value == null
+public sealed interface Value {
+    public fun isNullValue(): Boolean = this is PrimitiveValue && value == null
 }
 
 /**
  * A container that contains a [Value].
  */
-sealed interface ValueContainer {
-    val record: Value
+public sealed interface ValueContainer {
+    public val record: Value
 }
 
 /**

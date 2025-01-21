@@ -9,6 +9,7 @@ import kotlinx.serialization.MissingFieldException
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.CompositeDecoder
+import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
 
@@ -19,7 +20,7 @@ import kotlinx.serialization.modules.SerializersModule
  * @param record The [Value] object that the decoder decodes from.
  */
 @OptIn(ExperimentalSerializationApi::class)
-class AnyDecoder(
+public class AnyDecoder(
     override val serializersModule: SerializersModule = EmptySerializersModule(),
     override val record: Value
 ) : DecoderTemplate(), ValueContainer {
@@ -51,7 +52,7 @@ class AnyDecoder(
  * @param record The [StructureValue] object that the decoder decodes from.
  */
 @OptIn(ExperimentalSerializationApi::class)
-open class StructureDecoder(
+public open class StructureDecoder(
     override val serializersModule: SerializersModule = EmptySerializersModule(),
     final override val record: StructureValue
 ) : CompositeDecoderTemplate(), ValueContainer {
@@ -91,9 +92,9 @@ open class StructureDecoder(
         index: Int,
         deserializer: DeserializationStrategy<T>,
         previousValue: T?
-    ) = deserializer.deserialize(decodeInlineElement(descriptor, index))
+    ): T = deserializer.deserialize(decodeInlineElement(descriptor, index))
 
-    override fun decodeInlineElement(descriptor: SerialDescriptor, index: Int) =
+    override fun decodeInlineElement(descriptor: SerialDescriptor, index: Int): Decoder =
         AnyDecoder(
             serializersModule = serializersModule,
             record = currentProperty.value
@@ -107,7 +108,7 @@ open class StructureDecoder(
  * @param serializersModule The serializers module to use for decoding.
  * @param record The [StructureValue] object that the decoder decodes from.
  */
-class TypeTaggedDecoder(
+public class TypeTaggedDecoder(
     serializersModule: SerializersModule = EmptySerializersModule(),
     record: StructureValue
 ) : StructureDecoder(serializersModule, record) {
@@ -135,7 +136,7 @@ class TypeTaggedDecoder(
  * @param serializersModule The serializers module to use for decoding.
  * @param record The [StructureValue] object that the decoder decodes from.
  */
-open class ListDecoder(
+public open class ListDecoder(
     serializersModule: SerializersModule = EmptySerializersModule(),
     record: StructureValue
 ) : StructureDecoder(serializersModule, record) {
@@ -156,12 +157,12 @@ open class ListDecoder(
  * @param serializersModule The serializers module to use for decoding.
  * @param record The [StructureValue] object that the decoder decodes from.
  */
-class MapDecoder(
+public class MapDecoder(
     serializersModule: SerializersModule = EmptySerializersModule(),
     record: StructureValue
 ) : ListDecoder(serializersModule, record) {
-    var count = 0
-    override val iterator = sequence {
+    private var count = 0
+    override val iterator: Iterator<Property> = sequence {
         record.forEach {
             yield(Property(count, it.key))
             count++

@@ -10,7 +10,7 @@ import kotlin.reflect.KProperty
  * @param provider A function that provides the value of the property.
  * @return A [ReadOnlyProperty] that caches the value of the property.
  */
-inline fun <T, V : Any> globalCached(crossinline provider: T.() -> V) =
+public inline fun <T, V : Any> globalCached(crossinline provider: T.() -> V): ReadOnlyProperty<T, V> =
     object : ReadOnlyProperty<T, V> {
         private var value: V? = null
         override fun getValue(thisRef: T, property: KProperty<*>): V =
@@ -24,7 +24,7 @@ inline fun <T, V : Any> globalCached(crossinline provider: T.() -> V) =
  * @return A [ReadOnlyProperty] that caches the value of the property.
  */
 @JvmName("globalCachedNullable")
-inline fun <T, V : Any> globalCached(crossinline provider: T.() -> V?) =
+public inline fun <T, V : Any> globalCached(crossinline provider: T.() -> V?): ReadOnlyProperty<T, V?> =
     object : ReadOnlyProperty<T, V?> {
         private var value: V? = null
         private var initialized = false
@@ -40,7 +40,7 @@ inline fun <T, V : Any> globalCached(crossinline provider: T.() -> V?) =
  * @param func A function that contains the logic to compute the value.
  * @return A function that caches the result of the function.
  */
-inline fun <T, R : Any> cacheWith(cacheMap: MutableMap<T, R>, crossinline func: (T) -> R): ((T) -> R) =
+public inline fun <T, R : Any> cacheWith(cacheMap: MutableMap<T, R>, crossinline func: (T) -> R): ((T) -> R) =
     { arg: T -> cacheMap.getOrPut(arg) { func(arg) } }
 
 /**
@@ -52,7 +52,7 @@ inline fun <T, R : Any> cacheWith(cacheMap: MutableMap<T, R>, crossinline func: 
  * @return A function that caches the result of the function.
  */
 @JvmName("cacheWithNullable")
-inline fun <T, R : Any> cacheWith(cacheMap: MutableMap<T, R?>, crossinline func: (T) -> R?): ((T) -> R?) =
+public inline fun <T, R : Any> cacheWith(cacheMap: MutableMap<T, R?>, crossinline func: (T) -> R?): ((T) -> R?) =
     { arg: T ->
         if (cacheMap.contains(arg)) cacheMap[arg]
         else func(arg).also { cacheMap[arg] = it }
@@ -65,7 +65,7 @@ inline fun <T, R : Any> cacheWith(cacheMap: MutableMap<T, R?>, crossinline func:
  * @param provider A function that provides the value of the property.
  * @return A [ReadOnlyProperty] that provides the cached value of the property.
  */
-inline fun <T, V : Any> lazy(cacheMap: MutableMap<T, V>, crossinline provider: T.() -> V) =
+public inline fun <T, V : Any> lazy(cacheMap: MutableMap<T, V>, crossinline provider: T.() -> V): ReadOnlyProperty<T, V> =
     cacheWith(cacheMap) { provider(it) }.let {
         ReadOnlyProperty<T, V> { thisRef, _ -> it(thisRef) }
     }
@@ -79,7 +79,7 @@ inline fun <T, V : Any> lazy(cacheMap: MutableMap<T, V>, crossinline provider: T
  * @return A [ReadOnlyProperty] that provides the cached value of the property.
  */
 @JvmName("lazyNullable")
-inline fun <T, V : Any> lazy(cacheMap: MutableMap<T, V?>, crossinline provider: T.() -> V?) =
+public inline fun <T, V : Any> lazy(cacheMap: MutableMap<T, V?>, crossinline provider: T.() -> V?): ReadOnlyProperty<T, V?> =
     cacheWith(cacheMap) { provider(it) }.let {
         ReadOnlyProperty<T, V?> { thisRef, _ -> it(thisRef) }
     }

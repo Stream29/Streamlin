@@ -17,12 +17,12 @@ import kotlinx.serialization.modules.SerializersModule
  * @property record The [Value] object that the encoder encodes to.
  */
 @OptIn(ExperimentalSerializationApi::class)
-class AnyEncoder(
+public class AnyEncoder(
     override val serializersModule: SerializersModule,
     private val config: TransformConfiguration
 ) : EncoderTemplate(), ValueContainer {
     private var _record: Value? = null
-    override val record
+    override val record: Value
         get() = _record ?: throw SerializationException("No value has been encoded yet")
 
     override fun beginStructure(descriptor: SerialDescriptor): CompositeEncoderTemplate {
@@ -53,11 +53,11 @@ class AnyEncoder(
  * @property record The [StructureValue] object that the encoder encodes to.
  */
 @OptIn(ExperimentalSerializationApi::class)
-open class StructureEncoder(
+public open class StructureEncoder(
     final override val serializersModule: SerializersModule,
     private val config: TransformConfiguration
 ) : CompositeEncoderTemplate(), ValueContainer {
-    override val record = StructureValue()
+    override val record: StructureValue = StructureValue()
 
     override fun shouldEncodeElementDefault(descriptor: SerialDescriptor, index: Int): Boolean =
         config.encodeDefault
@@ -98,11 +98,11 @@ open class StructureEncoder(
  * @param serializersModule The serializers module to use for encoding.
  * @param config The configuration to use for encoding.
  */
-class MapEncoder(
+public class MapEncoder(
     serializersModule: SerializersModule,
     config: TransformConfiguration
 ) : StructureEncoder(serializersModule, config) {
-    override val record = StructureValue(ToMapList())
+    override val record: StructureValue = StructureValue(ToMapList())
 }
 
 /**
@@ -142,13 +142,13 @@ private class ToMapList(
  * @param config The configuration to use for encoding.
  */
 @OptIn(ExperimentalSerializationApi::class)
-class TypeTaggedEncoder(
+public class TypeTaggedEncoder(
     override val serializersModule: SerializersModule,
     private val config: TransformConfiguration
 ) : CompositeEncoderTemplate(), ValueContainer {
     private val nestedEncoder = StructureEncoder(serializersModule, config)
 
-    override val record by nestedEncoder::record
+    override val record: StructureValue by nestedEncoder::record
 
     override fun shouldEncodeElementDefault(descriptor: SerialDescriptor, index: Int): Boolean =
         config.encodeDefault
@@ -157,7 +157,7 @@ class TypeTaggedEncoder(
         descriptor: SerialDescriptor,
         index: Int,
         value: Any
-    ) = nestedEncoder.encodePrimitiveElement(descriptor, index, value)
+    ): Unit = nestedEncoder.encodePrimitiveElement(descriptor, index, value)
 
     override fun <T> encodeSerializableElement(
         descriptor: SerialDescriptor,
@@ -173,5 +173,5 @@ class TypeTaggedEncoder(
         this.record.addAll(encodedValues)
     }
 
-    override fun encodeNull(descriptor: SerialDescriptor, index: Int) = nestedEncoder.encodeNull(descriptor, index)
+    override fun encodeNull(descriptor: SerialDescriptor, index: Int): Unit = nestedEncoder.encodeNull(descriptor, index)
 }

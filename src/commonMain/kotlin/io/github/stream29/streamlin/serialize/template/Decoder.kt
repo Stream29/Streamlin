@@ -18,13 +18,13 @@ import kotlinx.serialization.encoding.Decoder
  * and [decodeNotNullMark] to decode nullable values.
  */
 @OptIn(ExperimentalSerializationApi::class)
-abstract class DecoderTemplate: Decoder {
+public abstract class DecoderTemplate: Decoder {
 
     /**
      * Decodes a primitive value.
      * Corresponding kind is in [PrimitiveKind].
      */
-    abstract fun decodePrimitive(): Any
+    public abstract fun decodePrimitive(): Any
 
     override fun decodeBoolean(): Boolean =
         decodePrimitive() as? Boolean
@@ -80,14 +80,14 @@ abstract class DecoderTemplate: Decoder {
  * You should override [decodePrimitiveElement] to provide actual decoding logic.
  */
 @OptIn(ExperimentalSerializationApi::class)
-abstract class CompositeDecoderTemplate : CompositeDecoder {
+public abstract class CompositeDecoderTemplate : CompositeDecoder {
 
     /**
      * Decodes a primitive value from the underlying input.
      * The resulting value is associated with the [descriptor] element at the given [index].
      * The element at the given index should have [PrimitiveKind] kind.
      */
-    abstract fun decodePrimitiveElement(descriptor: SerialDescriptor, index: Int) : Any
+    public abstract fun decodePrimitiveElement(descriptor: SerialDescriptor, index: Int) : Any
 
     override fun endStructure(descriptor: SerialDescriptor) {
         // Do nothing
