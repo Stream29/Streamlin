@@ -1,6 +1,10 @@
 import com.vanniktech.maven.publish.SonatypeHost
+import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JsModuleKind
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithTests
+import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
 import org.jetbrains.kotlin.konan.target.HostManager
 import java.net.URI
@@ -80,6 +84,15 @@ kotlin {
 
     // Tier 3
     mingwX64()
+
+    targets.withType<KotlinNativeTarget>().configureEach {
+        binaries.test(listOf(NativeBuildType.RELEASE))
+    }
+    targets.withType<KotlinNativeTargetWithTests<*>>().configureEach {
+        testRuns.create("releaseTest") {
+            setExecutionSourceFrom(binaries.getTest(NativeBuildType.RELEASE))
+        }
+    }
 
     sourceSets {
         val commonMain by getting {
