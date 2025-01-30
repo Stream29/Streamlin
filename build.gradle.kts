@@ -13,6 +13,7 @@ plugins {
     kotlin("multiplatform") version "2.1.0"
     kotlin("plugin.serialization") version "2.1.0"
     id("com.vanniktech.maven.publish") version "0.29.0"
+    id("org.jetbrains.kotlinx.atomicfu") version "0.27.0"
 }
 
 group = "io.github.stream29"
