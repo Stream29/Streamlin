@@ -98,6 +98,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 kotlin("reflect")
+                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
                 api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.7.2")
             }
         }
