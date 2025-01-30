@@ -1,17 +1,17 @@
+@file:OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class, ExperimentalKotlinGradlePluginApi::class)
+
 import com.vanniktech.maven.publish.SonatypeHost
-import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JsModuleKind
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithTests
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
-import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
 import org.jetbrains.kotlin.konan.target.HostManager
 import java.net.URI
 
 plugins {
-    kotlin("multiplatform") version "2.0.10"
-    kotlin("plugin.serialization") version "2.0.10"
+    kotlin("multiplatform") version "2.1.0"
+    kotlin("plugin.serialization") version "2.1.0"
     id("com.vanniktech.maven.publish") version "0.29.0"
 }
 
@@ -45,16 +45,13 @@ kotlin {
         }
     }
 
-    @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         nodejs()
     }
-    @OptIn(ExperimentalWasmDsl::class)
     wasmWasi {
         nodejs()
     }
 
-    @OptIn(ExperimentalKotlinGradlePluginApi::class)
     applyDefaultHierarchyTemplate {
 
     }
@@ -97,9 +94,8 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                kotlin("reflect")
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
-                api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.7.2")
+                api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.8.0")
             }
         }
         val commonTest by getting {
