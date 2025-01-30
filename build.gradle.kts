@@ -53,9 +53,6 @@ kotlin {
         nodejs()
     }
 
-    applyDefaultHierarchyTemplate {
-
-    }
     if (HostManager.hostIsMac) {
         // According to https://kotlinlang.org/docs/native-target-support.html
         // Tier 1
@@ -91,12 +88,31 @@ kotlin {
             setExecutionSourceFrom(binaries.getTest(NativeBuildType.RELEASE))
         }
     }
+    applyDefaultHierarchyTemplate {
+        common {
+            group("runBlocking") {
+                withJvm()
+                withNative()
+            }
+            group("noRunBlocking") {
+                withJs()
+                withWasmJs()
+                withWasmWasi()
+            }
+        }
+    }
 
     sourceSets {
         val commonMain by getting {
             dependencies {
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
                 api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.8.0")
+            }
+        }
+
+        val runBlockingMain by getting {
+            dependencies {
+                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
             }
         }
         val commonTest by getting {
