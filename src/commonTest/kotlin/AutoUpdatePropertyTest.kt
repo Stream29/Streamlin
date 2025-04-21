@@ -15,13 +15,17 @@ class AutoUpdatePropertyTest {
         assertFails { println(sub1) }
         assertFails { println(sub2) }
         root = 1
+        val subProperty3 = subProperty2.subproperty { it * 2 }
+        val sub3 by subProperty3
         assertEquals(1, root)
         assertEquals(2, sub1)
         assertEquals(4, sub2)
+        assertEquals(8, sub3)
         root = 2
         assertEquals(2, root)
         assertEquals(4, sub1)
         assertEquals(8, sub2)
+        assertEquals(16, sub3)
     }
 
     @Test

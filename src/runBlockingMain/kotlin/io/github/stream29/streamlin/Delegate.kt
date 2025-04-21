@@ -39,7 +39,7 @@ internal class SyncLazyAutoUpdatePropertyRoot<T>(
 ) : AutoUpdatePropertyRoot<T> {
     internal val version = atomic(0)
 
-    override operator fun setValue(thisRef: Any?, property: Any?, value: T): Unit {
+    override operator fun setValue(thisRef: Any?, property: Any?, value: T) {
         this.value = value
         version.incrementAndGet()
     }
@@ -91,7 +91,7 @@ internal class SyncPropagateAutoUpdatePropertyRoot<T>(
     private val subpropertyList = mutableListOf<SyncPropagateAutoUpdatePropertyNode<T, *>>()
     private val mutex = Mutex()
 
-    override operator fun setValue(thisRef: Any?, property: Any?, value: T): Unit {
+    override operator fun setValue(thisRef: Any?, property: Any?, value: T) {
         runBlocking {
             mutex.withLock {
                 this@SyncPropagateAutoUpdatePropertyRoot.value = value
@@ -110,8 +110,12 @@ internal class SyncPropagateAutoUpdatePropertyRoot<T>(
 
     override fun <R> subproperty(transform: (T) -> R): AutoUpdateProperty<R> = runBlocking {
         mutex.withLock {
-            SyncPropagateAutoUpdatePropertyNode(this@SyncPropagateAutoUpdatePropertyRoot, transform)
-                .also { subpropertyList.add(it) }
+            SyncPropagateAutoUpdatePropertyNode(
+                this@SyncPropagateAutoUpdatePropertyRoot,
+                transform,
+                @Suppress("UNCHECKED_CAST")
+                if (value === UninitializedValue) UninitializedValue else transform(value as T)
+            ).also { subpropertyList.add(it) }
         }
     }
 
@@ -120,10 +124,9 @@ internal class SyncPropagateAutoUpdatePropertyRoot<T>(
 internal class SyncPropagateAutoUpdatePropertyNode<T, V>(
     private val root: SyncPropagateAutoUpdatePropertyRoot<T>,
     internal val transform: (T) -> V,
-) : AutoUpdateProperty<V> {
     @Volatile
-    internal var value: Any? = UninitializedValue
-
+    internal var value: Any?
+) : AutoUpdateProperty<V> {
     override operator fun getValue(thisRef: Any?, property: Any?): V {
         if (value === UninitializedValue) {
             throw IllegalStateException("Property not initialized")
