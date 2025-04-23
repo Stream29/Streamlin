@@ -19,6 +19,12 @@ public expect fun <T> AutoUpdatePropertyRoot(
     initValue: T,
 ): AutoUpdatePropertyRoot<T>
 
+public fun <Root, Proxy> AutoUpdatePropertyRoot<Root>.proxied(
+    rootToProxy: (Root) -> Proxy,
+    proxyToRoot: (Proxy) -> Root,
+): AutoUpdatePropertyRoot<Proxy> =
+    ProxiedAutoUpdatePropertyRoot(this, rootToProxy, proxyToRoot)
+
 public interface AutoUpdateProperty<T> {
     public fun <R> subproperty(transform: (T) -> R): AutoUpdateProperty<R>
     public operator fun getValue(thisRef: Any?, property: Any?): T
@@ -26,6 +32,17 @@ public interface AutoUpdateProperty<T> {
 
 public interface AutoUpdatePropertyRoot<T> : AutoUpdateProperty<T> {
     public operator fun setValue(thisRef: Any?, property: Any?, value: T)
+}
+
+internal class ProxiedAutoUpdatePropertyRoot<Root, Proxy>(
+    val root: AutoUpdatePropertyRoot<Root>,
+    val rootToProxy: (Root) -> Proxy,
+    val proxyToRoot: (Proxy) -> Root,
+) : AutoUpdateProperty<Proxy> by root.subproperty(rootToProxy),
+    AutoUpdatePropertyRoot<Proxy> {
+    override fun setValue(thisRef: Any?, property: Any?, value: Proxy) {
+        root.setValue(thisRef, property, proxyToRoot(value))
+    }
 }
 
 internal class UnsafeLazyAutoUpdatePropertyRoot<T>(
