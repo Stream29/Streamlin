@@ -1,6 +1,7 @@
 import io.github.stream29.streamlin.AutoUpdateMode
 import io.github.stream29.streamlin.AutoUpdatePropertyRoot
 import io.github.stream29.streamlin.getValue
+import io.github.stream29.streamlin.proxied
 import io.github.stream29.streamlin.setValue
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -28,6 +29,32 @@ class AutoUpdatePropertyTest {
         assertEquals(4, sub1)
         assertEquals(8, sub2)
         assertEquals(16, sub3)
+
+        // Test proxied property
+        val proxiedProperty = rootProperty.proxied(
+            rootToProxy = { it * 10 },
+            proxyToRoot = { it / 10 }
+        )
+        var proxiedRoot by proxiedProperty
+
+        // Test that the proxied property reflects the current root value
+        assertEquals(20, proxiedRoot)
+
+        // Test that changing the proxied property updates the root property
+        proxiedRoot = 30
+        assertEquals(3, root)
+        assertEquals(6, sub1)
+        assertEquals(12, sub2)
+        assertEquals(24, sub3)
+        assertEquals(30, proxiedRoot)
+
+        // Test that changing the root property updates the proxied property
+        root = 4
+        assertEquals(4, root)
+        assertEquals(8, sub1)
+        assertEquals(16, sub2)
+        assertEquals(32, sub3)
+        assertEquals(40, proxiedRoot)
     }
 
     @Test
