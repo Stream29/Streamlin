@@ -20,3 +20,7 @@ public inline fun <T : Any> T.filter(crossinline predicate: T.() -> Boolean) =
 @JvmName("filterNullable")
 public inline fun <T : Any> T?.filter(crossinline predicate: T.() -> Boolean) =
     if (this != null && predicate()) this else null
+
+public inline fun <reified T> Any?.cast() = this as T
+
+public inline fun <reified T> Any?.safeCast() = this as? T
