@@ -1,5 +1,7 @@
 import io.github.stream29.streamlin.AutoUpdateMode
 import io.github.stream29.streamlin.AutoUpdatePropertyRoot
+import io.github.stream29.streamlin.getValue
+import io.github.stream29.streamlin.setValue
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFails

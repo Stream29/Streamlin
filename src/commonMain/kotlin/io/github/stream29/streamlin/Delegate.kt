@@ -1,6 +1,5 @@
 package io.github.stream29.streamlin
 
-
 public data object UninitializedValue
 
 public enum class AutoUpdateMode {
@@ -25,13 +24,17 @@ public fun <Root, Proxy> AutoUpdatePropertyRoot<Root>.proxied(
 ): AutoUpdatePropertyRoot<Proxy> =
     ProxiedAutoUpdatePropertyRoot(this, rootToProxy, proxyToRoot)
 
+public operator fun <T> AutoUpdateProperty<T>.getValue(thisRef: Any?, property: Any?) = get()
+
+public operator fun <T> AutoUpdatePropertyRoot<T>.setValue(thisRef: Any?, property: Any?, value: T) = set(value)
+
 public interface AutoUpdateProperty<T> {
     public fun <R> subproperty(transform: (T) -> R): AutoUpdateProperty<R>
-    public operator fun getValue(thisRef: Any?, property: Any?): T
+    public fun get(): T
 }
 
 public interface AutoUpdatePropertyRoot<T> : AutoUpdateProperty<T> {
-    public operator fun setValue(thisRef: Any?, property: Any?, value: T)
+    public fun set(value: T)
 }
 
 internal class ProxiedAutoUpdatePropertyRoot<Root, Proxy>(
@@ -40,8 +43,8 @@ internal class ProxiedAutoUpdatePropertyRoot<Root, Proxy>(
     val proxyToRoot: (Proxy) -> Root,
 ) : AutoUpdateProperty<Proxy> by root.subproperty(rootToProxy),
     AutoUpdatePropertyRoot<Proxy> {
-    override fun setValue(thisRef: Any?, property: Any?, value: Proxy) {
-        root.setValue(thisRef, property, proxyToRoot(value))
+    override fun set(value: Proxy) {
+        root.set(proxyToRoot(value))
     }
 }
 
@@ -51,12 +54,12 @@ internal class UnsafeLazyAutoUpdatePropertyRoot<T>(
     internal var version: Int = 0
         private set
 
-    override operator fun setValue(thisRef: Any?, property: Any?, value: T) {
+    override fun set(value: T) {
         this.value = value
         version++
     }
 
-    override operator fun getValue(thisRef: Any?, property: Any?): T {
+    override fun get(): T {
         if (value === UninitializedValue) {
             throw IllegalStateException("Property not initialized")
         }
@@ -75,7 +78,7 @@ internal class UnsafeLazyAutoUpdatePropertyNode<T, V>(
     private var version: Int = -1
     private var value: V? = null
 
-    override operator fun getValue(thisRef: Any?, property: Any?): V {
+    override fun get(): V {
         if (root.version != version) {
             value = transform(root.getValue(null, null))
             version = root.version
@@ -93,12 +96,12 @@ internal class UnsafePropagateAutoUpdatePropertyRoot<T>(
 ) : AutoUpdatePropertyRoot<T> {
     private val subpropertyList = mutableListOf<UnsafePropagateAutoUpdatePropertyNode<T, *>>()
 
-    override operator fun setValue(thisRef: Any?, property: Any?, value: T) {
+    override fun set(value: T) {
         this.value = value
         subpropertyList.forEach { it.value = it.transform(value) }
     }
 
-    override operator fun getValue(thisRef: Any?, property: Any?): T {
+    override fun get(): T {
         if (value == UninitializedValue) {
             throw IllegalStateException("Property not initialized")
         }
@@ -120,7 +123,7 @@ internal class UnsafePropagateAutoUpdatePropertyNode<T, V>(
     internal val transform: (T) -> V,
     internal var value: Any? = UninitializedValue
 ) : AutoUpdateProperty<V> {
-    override operator fun getValue(thisRef: Any?, property: Any?): V {
+    override fun get(): V {
         if (value === UninitializedValue) {
             throw IllegalStateException("Property not initialized")
         }

@@ -39,12 +39,12 @@ internal class SyncLazyAutoUpdatePropertyRoot<T>(
 ) : AutoUpdatePropertyRoot<T> {
     internal val version = atomic(0)
 
-    override operator fun setValue(thisRef: Any?, property: Any?, value: T) {
+    override fun set(value: T) {
         this.value = value
         version.incrementAndGet()
     }
 
-    override operator fun getValue(thisRef: Any?, property: Any?): T {
+    override fun get(): T {
         if (value === UninitializedValue) {
             throw IllegalStateException("Property not initialized")
         }
@@ -67,7 +67,7 @@ internal class SyncLazyAutoUpdatePropertyNode<T, V>(
     private var value: V? = null
     private val mutex = Mutex()
 
-    override operator fun getValue(thisRef: Any?, property: Any?): V {
+    override fun get(): V {
         runBlocking {
             mutex.withLock {
                 if (root.version.value != version) {
@@ -91,7 +91,7 @@ internal class SyncPropagateAutoUpdatePropertyRoot<T>(
     private val subpropertyList = mutableListOf<SyncPropagateAutoUpdatePropertyNode<T, *>>()
     private val mutex = Mutex()
 
-    override operator fun setValue(thisRef: Any?, property: Any?, value: T) {
+    override fun set(value: T) {
         runBlocking {
             mutex.withLock {
                 this@SyncPropagateAutoUpdatePropertyRoot.value = value
@@ -100,7 +100,7 @@ internal class SyncPropagateAutoUpdatePropertyRoot<T>(
         }
     }
 
-    override operator fun getValue(thisRef: Any?, property: Any?): T {
+    override fun get(): T {
         if (value == UninitializedValue) {
             throw IllegalStateException("Property not initialized")
         }
@@ -127,7 +127,7 @@ internal class SyncPropagateAutoUpdatePropertyNode<T, V>(
     @Volatile
     internal var value: Any?
 ) : AutoUpdateProperty<V> {
-    override operator fun getValue(thisRef: Any?, property: Any?): V {
+    override fun get(): V {
         if (value === UninitializedValue) {
             throw IllegalStateException("Property not initialized")
         }
