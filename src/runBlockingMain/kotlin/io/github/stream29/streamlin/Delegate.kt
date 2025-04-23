@@ -1,3 +1,5 @@
+@file:JvmName("DelegateJvm")
+
 package io.github.stream29.streamlin
 
 import kotlinx.atomicfu.atomic
@@ -5,6 +7,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlin.concurrent.Volatile
+import kotlin.jvm.JvmName
 
 public actual fun <T> AutoUpdatePropertyRoot(
     sync: Boolean,
