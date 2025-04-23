@@ -7,6 +7,16 @@ import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.serializer
 import kotlin.getValue
 
+/**
+ * A serializer that delegates serialization and deserialization to another serializer.
+ * This is useful when you want to serialize a type using a different representation.
+ *
+ * @param Original The original type to be serialized/deserialized.
+ * @param Delegate The delegate type used for actual serialization/deserialization.
+ * @property delegate The serializer for the delegate type.
+ * @property fromDelegate A function that converts from the delegate type to the original type.
+ * @property toDelegate A function that converts from the original type to the delegate type.
+ */
 public class DelegatingSerializer<Original, Delegate>(
     private val delegate: KSerializer<Delegate>,
     private val fromDelegate: (Delegate) -> Original,
@@ -20,6 +30,16 @@ public class DelegatingSerializer<Original, Delegate>(
         fromDelegate(delegate.deserialize(decoder))
 }
 
+/**
+ * Creates a DelegatingSerializer using a reified delegate type.
+ * This factory function automatically creates the serializer for the delegate type.
+ *
+ * @param Original The original type to be serialized/deserialized.
+ * @param Delegate The delegate type used for actual serialization/deserialization.
+ * @param fromDelegate A function that converts from the delegate type to the original type.
+ * @param toDelegate A function that converts from the original type to the delegate type.
+ * @return A new DelegatingSerializer that uses the specified conversion functions.
+ */
 public inline fun <Original, reified Delegate> DelegatingSerializer(
     noinline fromDelegate: (Delegate) -> Original,
     noinline toDelegate: (Original) -> Delegate,
