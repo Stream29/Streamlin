@@ -2,9 +2,27 @@
 
 This is a kotlin common library that provides a set of utilities by Stream.
 
-Modules are as follows.
+## Installation
 
-You can find the examples in src/commonTest/kotlin/Examples.kt.
+### Gradle
+
+#### build.gradle.kts
+
+```kotlin
+dependencies {
+    implementation("io.github.stream29:streamlin:3.0.1")
+}
+```
+
+#### Version Catalog (libs.versions.toml)
+
+```toml
+[versions]
+streamlin = "3.0.1"
+
+[libraries]
+streamlin = { group = "io.github.stream29", name = "streamlin", version.ref = "streamlin" }
+```
 
 ## Cache
 
@@ -52,7 +70,9 @@ println(example1.nameOfFirstAccessedInstance) // "Stream"
 println(example2.nameOfFirstAccessedInstance) // "Stream"
 ```
 
-## PrettyPrint
+## Modules
+
+### PrettyPrint
 
 This module provides a way to pretty print a data class's `toString()` result.
 
@@ -87,27 +107,11 @@ PrettyPrint(
  */
 ```
 
-## AddToStdlib
+### AddToStdlib
 
 This module provides a set of extension functions making chained calls easier.
 
-### Filter
-
-The `filter` function is an extension function version of `takeIf` in the Kotlin standard library.
-
-Example:
-
-```kotlin
-class Example(val name: String)
-```
-
-```kotlin
-val example = Example("Stream")
-example.filter { name.startsWith("str", ignoreCase = true) } // example
-example.filter { name.startsWith("str", ignoreCase = false) } // null
-```
-
-### Cast and SafeCast
+#### Cast and SafeCast
 
 The `cast` and `safeCast` functions provide convenient ways to cast objects.
 
@@ -124,11 +128,11 @@ val safeString: String? = any.safeCast()
 val safeInt: Int? = any.safeCast() // Returns null since any is a String
 ```
 
-## AutoUpdateProperty
+### AutoUpdateProperty
 
 This module provides a way to create properties that automatically update their values when their dependencies change.
 
-### Basic Usage
+#### Basic Usage
 
 ```kotlin
 // Create a root property
@@ -155,7 +159,7 @@ println(doubled)    // 20
 println(quadrupled) // 40
 ```
 
-### Proxied Properties
+#### Proxied Properties
 
 You can create a proxy for a property that works with a different type:
 
@@ -184,14 +188,14 @@ stringValue = "30"
 println(intValue)    // 30
 ```
 
-### Update Modes
+#### Update Modes
 
 AutoUpdateProperty supports two update modes:
 
 - `AutoUpdateMode.PROPAGATE`: Updates are propagated to all dependent properties immediately when the root property changes.
 - `AutoUpdateMode.LAZY`: Values are updated only when accessed, which can be more efficient when not all properties are used.
 
-## DelegatingSerializer
+### DelegatingSerializer
 
 This module provides a way to serialize and deserialize objects by delegating to another serializer.
 
