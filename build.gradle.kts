@@ -118,6 +118,7 @@ kotlin {
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test"))
+                api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
             }
         }
     }
