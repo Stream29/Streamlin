@@ -1,6 +1,5 @@
-import io.github.stream29.streamlin.prettyPrint
-import io.github.stream29.streamlin.prettyPrintln
-import io.github.stream29.streamlin.toPrettyFormat
+package io.github.stream29.streamlin
+
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

@@ -1,5 +1,5 @@
-import io.github.stream29.streamlin.cast
-import io.github.stream29.streamlin.safeCast
+package io.github.stream29.streamlin
+
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith

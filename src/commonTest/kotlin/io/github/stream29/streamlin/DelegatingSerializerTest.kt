@@ -1,7 +1,9 @@
-import io.github.stream29.streamlin.DelegatingSerializer
+package io.github.stream29.streamlin
+
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.serializer
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -19,13 +21,12 @@ class DelegatingSerializerTest {
 
     @Test
     fun testSerializerDescriptor() {
-        val delegateDescriptor = kotlinx.serialization.serializer<PointDto>().descriptor
+        val delegateDescriptor = serializer<PointDto>().descriptor
         assertEquals(delegateDescriptor, PointSerializer.descriptor)
     }
 
     @Test
     fun testPointJsonSerialization() {
-        val json = Json { prettyPrint = false }
         val point = Point(10, 20)
         val jsonString = json.encodeToString(point)
         val expectedJson = """{"coords":"10,20"}"""
@@ -34,3 +35,5 @@ class DelegatingSerializerTest {
         assertEquals(point, deserializedPoint)
     }
 }
+
+val json = Json { prettyPrint = false }

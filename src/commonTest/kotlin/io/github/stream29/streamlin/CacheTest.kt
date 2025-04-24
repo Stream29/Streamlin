@@ -1,6 +1,5 @@
-import io.github.stream29.streamlin.cacheWith
-import io.github.stream29.streamlin.globalCached
-import io.github.stream29.streamlin.lazy
+package io.github.stream29.streamlin
+
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull

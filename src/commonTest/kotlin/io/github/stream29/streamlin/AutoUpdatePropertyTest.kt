@@ -1,8 +1,5 @@
-import io.github.stream29.streamlin.AutoUpdateMode
-import io.github.stream29.streamlin.AutoUpdatePropertyRoot
-import io.github.stream29.streamlin.getValue
-import io.github.stream29.streamlin.proxied
-import io.github.stream29.streamlin.setValue
+package io.github.stream29.streamlin
+
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
