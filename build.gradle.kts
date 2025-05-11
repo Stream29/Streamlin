@@ -102,20 +102,20 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
-                api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.8.0")
+                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+                api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.8.1")
             }
         }
 
         val runBlockingMain by getting {
             dependencies {
-                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
+                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
             }
         }
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test"))
-                api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
+                api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
             }
         }
     }
